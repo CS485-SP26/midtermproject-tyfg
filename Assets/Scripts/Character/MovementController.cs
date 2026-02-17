@@ -24,6 +24,8 @@ namespace Character
         [SerializeField] protected float jumpForce = 6f;
         [SerializeField] protected float crouchMultiplier = 0.6f;
         [SerializeField] protected GroundProximity groundProximity;
+        [SerializeField] protected LayerMask groundLayers = ~0;
+        [SerializeField] protected string[] extraGroundTags;
 
         // Collider adjustments for crouching
         [Header("Crouch Settings")]
@@ -64,6 +66,11 @@ namespace Character
             if(!groundProximity)
                 groundProximity = GetComponentInChildren<GroundProximity>();
 
+            // Sync standing values with the actual collider at startup so crouch math
+            // uses the true setup from the prefab/scene.
+            standingHeight = capsule.height;
+            standingCenterY = capsule.center.y;
+
             jumpsRemaining = maxJumps;
         }
 
@@ -77,7 +84,7 @@ namespace Character
 
         public virtual void Jump()
         {
-            if (!allowJumpQueue && !IsGrounded())
+            if (!allowJumpQueue && !IsGrounded)
                 return;
 
             jumpQueued = true;
@@ -106,7 +113,7 @@ namespace Character
 
         public virtual void ToggleCrouch()
         {
-            if (!IsGrounded())
+            if (!IsGrounded)
                 return;
             if (!capsule)
                 return;
@@ -115,14 +122,28 @@ namespace Character
 
             if (isCrouching)
             {
-                capsule.height = crouchingHeight;
-                capsule.center = new Vector3(0, crouchingCenterY, 0);
+                SetCapsuleHeightKeepingBottom(crouchingHeight);
             }
             else
             {
-                capsule.height = standingHeight;
-                capsule.center = new Vector3(0, standingCenterY, 0);
+                SetCapsuleHeightKeepingBottom(standingHeight);
             }
+        }
+
+        protected void SetCapsuleHeightKeepingBottom(float targetHeight)
+        {
+            float clampedHeight = Mathf.Max(0.01f, targetHeight);
+
+            float currentBottom = capsule.center.y - (capsule.height * 0.5f);
+            float targetCenterY = currentBottom + (clampedHeight * 0.5f);
+
+            if (Mathf.Approximately(clampedHeight, crouchingHeight))
+                crouchingCenterY = targetCenterY;
+
+            capsule.height = clampedHeight;
+            Vector3 center = capsule.center;
+            center.y = targetCenterY;
+            capsule.center = center;
         }
 
         // -------------------------
@@ -140,7 +161,7 @@ namespace Character
 
         protected virtual void OnCollisionExit(Collision collision)
         {
-            if (collision.gameObject.CompareTag("Ground")) 
+            if (IsGroundCollider(collision.collider))
             {
                 groundedColliders.Remove(collision.collider);
             }
@@ -148,7 +169,7 @@ namespace Character
 
         protected virtual void EvaluateGroundCollision(Collision collision)
         {
-            if (!collision.gameObject.CompareTag("Ground"))
+            if (!IsGroundCollider(collision.collider))
                 return;
             
             bool hasGroundLikeContact = false;
@@ -167,10 +188,7 @@ namespace Character
                 return;
             }
 
-            bool justLanded = groundedColliders.Add(collision.collider);
-
-            if(!justLanded)
-                return;
+            groundedColliders.Add(collision.collider);
             
             if (rb.linearVelocity.y < 0f)
             {
@@ -180,19 +198,54 @@ namespace Character
                 rb.linearVelocity.z
                 );
             }
-            
-            jumpsRemaining = maxJumps;
+
+            // Refill jumps on grounded contact once upward motion has ended.
+            // This avoids getting stuck at 0 jumps if a collider was never removed from the set.
+            if (rb.linearVelocity.y <= 0f)
+            {
+                jumpsRemaining = maxJumps;
+            }
         }
 
-        bool IsGrounded()
+        protected bool IsGroundCollider(Collider collider)
+        {
+            if (!collider)
+                return false;
+
+            int layerBit = 1 << collider.gameObject.layer;
+            if ((groundLayers.value & layerBit) != 0)
+                return true;
+
+            if (collider.CompareTag("Ground"))
+                return true;
+
+            if (extraGroundTags == null || extraGroundTags.Length == 0)
+                return false;
+
+            foreach (string tag in extraGroundTags)
+            {
+                if (!string.IsNullOrWhiteSpace(tag) && collider.CompareTag(tag))
+                    return true;
+            }
+
+            return false;
+        }
+
+        bool IsGroundedInternal()
         {
             return groundedColliders.Count > 0;
         }
 
-        public bool IsGroundedState() => IsGrounded();
-        public float VerticalVelocity() => rb.linearVelocity.y;
-        public bool NearGround() => groundProximity && groundProximity.nearGround;
-        public bool IsCrouchingState() => isCrouching;
+        public bool IsGrounded => IsGroundedInternal();
+        public float VerticalVelocity => rb.linearVelocity.y;
+        public bool IsNearGround => groundProximity && groundProximity.nearGround;
+        public bool IsCrouching => isCrouching;
+
+        // Backwards-compatible wrappers while transitioning call sites.
+        public bool IsGroundedState() => IsGrounded;
+        public float VerticalVelocityState() => VerticalVelocity;
+        public bool NearGround() => IsNearGround;
+        public bool IsCrouchingState() => IsCrouching;
 
         public virtual bool CanJump()
         {

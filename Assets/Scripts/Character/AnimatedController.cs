@@ -42,7 +42,7 @@ namespace Character
         }
 
         public void TriggerJump()
-        {
+        {   
             animator.SetTrigger("Jump");
         }
 
@@ -62,7 +62,7 @@ namespace Character
 
             // Advanced animation parameters from your previous project
             animator.SetBool("IsGrounded", moveController.IsGroundedState());
-            animator.SetFloat("VerticalVelocity", moveController.VerticalVelocity());
+            animator.SetFloat("VerticalVelocity", moveController.VerticalVelocity);
             animator.SetBool("NearGround", moveController.NearGround());
             animator.SetBool("IsCrouching", moveController.IsCrouchingState());
             animator.SetBool("CanJump", moveController.CanJump());

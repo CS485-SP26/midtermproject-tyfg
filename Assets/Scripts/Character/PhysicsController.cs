@@ -58,7 +58,7 @@ namespace Character
         // -------------------------
         public override void Jump()
         {
-            jumpQueued = true;
+            base.Jump();
         }
 
         protected override void FixedUpdate()
