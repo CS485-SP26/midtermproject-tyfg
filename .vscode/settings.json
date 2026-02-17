@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Cs_485_Code.slnx"
+    "dotnet.defaultSolution": "midtermproject-tyfg.slnx"
 }
