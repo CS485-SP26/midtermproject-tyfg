@@ -3672,6 +3672,10 @@ MonoBehaviour:
   jumpForce: 6
   crouchMultiplier: 0.6
   groundProximity: {fileID: 2061873693}
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  extraGroundTags: []
   capsule: {fileID: 431992752}
   standingHeight: 2
   crouchingHeight: 1.2
@@ -15617,6 +15621,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GroundProximity
   nearGround: 0
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  extraGroundTags: []
 --- !u!136 &2061873694
 CapsuleCollider:
   m_ObjectHideFlags: 0
