@@ -2,6 +2,7 @@ using Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class CurrencyTextUI : MonoBehaviour
 {
@@ -20,8 +21,10 @@ public class CurrencyTextUI : MonoBehaviour
     [SerializeField] private string seedsObjectName = "SeedAmount";
 
     private GameManager gameManager;
+    private int lastRenderedFunds = int.MinValue;
+    private int lastRenderedSeeds = int.MinValue;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureInstance()
     {
         if (FindObjectsByType<CurrencyTextUI>(FindObjectsSortMode.None).Length > 0)
@@ -50,9 +53,7 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void Start()
     {
-        gameManager = GameManager.Instance;
-        gameManager.FundsChanged += HandleFundsChanged;
-        gameManager.SeedsChanged += HandleSeedsChanged;
+        BindGameManager();
         AutoBindTextTargets();
         RefreshAll();
     }
@@ -76,8 +77,27 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        BindGameManager();
         AutoBindTextTargets();
         RefreshAll();
+    }
+
+    private void Update()
+    {
+        if (SceneManager.GetActiveScene().name == "Scene0-Intro")
+            return;
+
+        if (gameManager == null)
+            BindGameManager();
+
+        if (gameManager == null)
+            return;
+
+        if (gameManager.Funds != lastRenderedFunds)
+            UpdateFundsText(gameManager.Funds);
+
+        if (gameManager.Seeds != lastRenderedSeeds)
+            UpdateSeedsText(gameManager.Seeds);
     }
 
     private void HandleFundsChanged(int funds)
@@ -106,6 +126,8 @@ public class CurrencyTextUI : MonoBehaviour
 
         if (fundsText != null)
             fundsText.text = fundsLabel.EndsWith("$") ? $"{fundsLabel}{funds}" : $"{fundsLabel} {funds}";
+
+        lastRenderedFunds = funds;
     }
 
     private void UpdateSeedsText(int seeds)
@@ -115,6 +137,8 @@ public class CurrencyTextUI : MonoBehaviour
 
         if (seedsText != null)
             seedsText.text = $"{seedsLabel} {seeds}";
+
+        lastRenderedSeeds = seeds;
     }
 
     private void AutoBindTextTargets()
@@ -139,5 +163,29 @@ public class CurrencyTextUI : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void BindGameManager()
+    {
+        GameManager resolved = FindObjectsByType<GameManager>(FindObjectsSortMode.None).FirstOrDefault();
+        if (resolved == null && SceneManager.GetActiveScene().name != "Scene0-Intro")
+            resolved = GameManager.Instance;
+
+        if (resolved == gameManager)
+            return;
+
+        if (gameManager != null)
+        {
+            gameManager.FundsChanged -= HandleFundsChanged;
+            gameManager.SeedsChanged -= HandleSeedsChanged;
+        }
+
+        gameManager = resolved;
+
+        if (gameManager != null)
+        {
+            gameManager.FundsChanged += HandleFundsChanged;
+            gameManager.SeedsChanged += HandleSeedsChanged;
+        }
     }
 }

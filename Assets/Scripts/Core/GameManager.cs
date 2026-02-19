@@ -46,6 +46,16 @@ namespace Core
             Funds = startingFunds;
             Seeds = startingSeeds;
             DontDestroyOnLoad(this.gameObject);
+
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+            EnsureSingleAudioListener();
+        }
+
+        private void OnDestroy()
+        {
+            if (instance == this)
+                SceneManager.sceneLoaded -= HandleSceneLoaded;
         }
 
         public void LoadScenebyName(string sceneName)
@@ -126,6 +136,53 @@ namespace Core
 
             FundsChanged?.Invoke(Funds);
             SeedsChanged?.Invoke(Seeds);
+        }
+
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            EnsureSingleAudioListener();
+        }
+
+        private static void EnsureSingleAudioListener()
+        {
+            AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+            if (listeners == null || listeners.Length == 0)
+                return;
+
+            if (listeners.Length == 1)
+            {
+                if (!listeners[0].enabled)
+                    listeners[0].enabled = true;
+                return;
+            }
+
+            AudioListener keep = null;
+            Camera mainCamera = Camera.main;
+            if (mainCamera != null)
+                keep = mainCamera.GetComponent<AudioListener>();
+
+            if (keep == null)
+            {
+                foreach (AudioListener listener in listeners)
+                {
+                    if (listener != null && listener.enabled && listener.gameObject.activeInHierarchy)
+                    {
+                        keep = listener;
+                        break;
+                    }
+                }
+            }
+
+            if (keep == null)
+                keep = listeners[0];
+
+            foreach (AudioListener listener in listeners)
+            {
+                if (listener == null)
+                    continue;
+
+                listener.enabled = listener == keep;
+            }
         }
     }
 

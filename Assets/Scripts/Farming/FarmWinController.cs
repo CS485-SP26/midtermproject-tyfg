@@ -1,37 +1,33 @@
-using Core;
-using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Farming
 {
-    public class FarmWinController : MonoBehaviour
+    public class FarmWinController : RewardControllerBase
     {
+        public const string AllTilesRewardGivenFlag = "farm_all_tiles_reward_given";
+
         [Header("Win Reward")]
         [SerializeField] private int fundsReward = 25;
         [SerializeField] private float checkInterval = 0.2f;
-
-        [Header("Congrats UI (Optional)")]
-        [SerializeField] private TMP_Text congratsText;
         [SerializeField] private string congratsMessage = "All tiles watered! Funds awarded.";
+        [SerializeField] private Color congratsColor = new Color(0.9f, 1f, 0.9f, 1f);
 
         private float checkTimer = 0f;
-        private bool rewardGivenForCurrentWateredState = false;
         private FarmTile[] farmTiles = new FarmTile[0];
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void InstallBootstrap()
         {
-            if (FindObjectsByType<FarmWinBootstrap>(FindObjectsSortMode.None).Length > 0)
-                return;
-
-            GameObject go = new GameObject("FarmWinBootstrap");
-            DontDestroyOnLoad(go);
-            go.AddComponent<FarmWinBootstrap>();
+            SceneManager.sceneLoaded -= HandleSceneLoadedStatic;
+            SceneManager.sceneLoaded += HandleSceneLoadedStatic;
+            EnsureControllerForActiveScene();
         }
 
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             if (fundsReward < 1)
                 fundsReward = 1;
 
@@ -39,14 +35,17 @@ namespace Farming
                 checkInterval = 0.05f;
         }
 
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             RefreshTiles();
-            SetCongratsVisible(false);
+            EvaluateWinCondition();
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
+
             checkTimer -= Time.deltaTime;
             if (checkTimer > 0f)
                 return;
@@ -65,20 +64,19 @@ namespace Farming
             if (farmTiles == null || farmTiles.Length == 0)
                 RefreshTiles();
 
+            Core.GameManager gameManager = Core.GameManager.Instance;
             bool allWatered = AreAllTilesWatered();
             if (allWatered)
             {
-                SetCongratsVisible(true);
-                if (!rewardGivenForCurrentWateredState)
+                if (!gameManager.IsFlagSet(AllTilesRewardGivenFlag))
                 {
-                    GameManager.Instance.AddFunds(fundsReward);
-                    rewardGivenForCurrentWateredState = true;
+                    AwardFundsAndNotify(fundsReward, congratsMessage, congratsColor);
+                    gameManager.SetFlag(AllTilesRewardGivenFlag, true);
                 }
             }
             else
             {
-                SetCongratsVisible(false);
-                rewardGivenForCurrentWateredState = false;
+                gameManager.SetFlag(AllTilesRewardGivenFlag, false);
             }
         }
 
@@ -87,63 +85,52 @@ namespace Farming
             if (farmTiles == null || farmTiles.Length == 0)
                 return false;
 
-            bool foundAnyTile = false;
+            bool foundAnyFarmableTile = false;
             foreach (FarmTile tile in farmTiles)
             {
                 if (tile == null)
                     continue;
 
-                foundAnyTile = true;
+                if (tile.GetComponent<SeedPurchaseTile>() != null)
+                    continue;
+
+                foundAnyFarmableTile = true;
                 if (tile.GetCondition != FarmTile.Condition.Watered)
                     return false;
             }
 
-            return foundAnyTile;
+            return foundAnyFarmableTile;
         }
 
-        private void SetCongratsVisible(bool visible)
+        private static void HandleSceneLoadedStatic(Scene scene, LoadSceneMode mode)
         {
-            if (congratsText == null)
+            EnsureControllerForActiveScene();
+        }
+
+        public static void NotifyTileStatePotentiallyChanged()
+        {
+            EnsureControllerForActiveScene();
+
+            FarmWinController[] controllers = FindObjectsByType<FarmWinController>(FindObjectsSortMode.None);
+            foreach (FarmWinController controller in controllers)
+            {
+                if (controller == null || !controller.isActiveAndEnabled)
+                    continue;
+
+                controller.EvaluateWinCondition();
+            }
+        }
+
+        private static void EnsureControllerForActiveScene()
+        {
+            if (FindObjectsByType<FarmWinController>(FindObjectsSortMode.None).Length > 0)
                 return;
 
-            congratsText.gameObject.SetActive(visible);
-            if (visible)
-                congratsText.text = congratsMessage;
-        }
+            if (FindObjectsByType<FarmTile>(FindObjectsSortMode.None).Length == 0)
+                return;
 
-        private class FarmWinBootstrap : MonoBehaviour
-        {
-            private void OnEnable()
-            {
-                SceneManager.sceneLoaded += HandleSceneLoaded;
-            }
-
-            private void OnDisable()
-            {
-                SceneManager.sceneLoaded -= HandleSceneLoaded;
-            }
-
-            private void Start()
-            {
-                EnsureControllerForActiveScene();
-            }
-
-            private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
-            {
-                EnsureControllerForActiveScene();
-            }
-
-            private static void EnsureControllerForActiveScene()
-            {
-                if (FindObjectsByType<FarmWinController>(FindObjectsSortMode.None).Length > 0)
-                    return;
-
-                if (FindObjectsByType<FarmTile>(FindObjectsSortMode.None).Length == 0)
-                    return;
-
-                GameObject go = new GameObject("FarmWinController");
-                go.AddComponent<FarmWinController>();
-            }
+            GameObject go = new GameObject("FarmWinController");
+            go.AddComponent<FarmWinController>();
         }
     }
 }

@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Environment;
+using Core;
 
 namespace Farming 
 {
     public class FarmTile : MonoBehaviour
     {
+        private const int FallbackAllTilesRewardFunds = 25;
+
         public enum Condition { Grass, Tilled, Watered }
 
         [SerializeField] private Condition tileCondition = Condition.Grass; 
@@ -46,6 +49,8 @@ namespace Farming
                 case FarmTile.Condition.Watered: Debug.Log("Ready for planting"); break;
             }
             daysSinceLastInteraction = 0;
+            FarmWinController.NotifyTileStatePotentiallyChanged();
+            EvaluateAllTilesRewardFallback();
         }
 
         public void Till()
@@ -91,6 +96,7 @@ namespace Farming
 
         public void OnDayPassed()
         {
+            Condition previousCondition = tileCondition;
             daysSinceLastInteraction++;
             if(daysSinceLastInteraction >= 2)
             {
@@ -98,6 +104,54 @@ namespace Farming
                 else if(tileCondition == FarmTile.Condition.Tilled) tileCondition = FarmTile.Condition.Grass;
             }
             UpdateVisual();
+
+            if (previousCondition != tileCondition)
+            {
+                FarmWinController.NotifyTileStatePotentiallyChanged();
+                EvaluateAllTilesRewardFallback();
+            }
+        }
+
+        private static void EvaluateAllTilesRewardFallback()
+        {
+            FarmTile[] tiles = FindObjectsByType<FarmTile>(FindObjectsSortMode.None);
+            if (tiles == null || tiles.Length == 0)
+                return;
+
+            bool foundAnyFarmableTile = false;
+            bool allWatered = true;
+            foreach (FarmTile tile in tiles)
+            {
+                if (tile == null)
+                    continue;
+
+                if (tile.GetComponent<SeedPurchaseTile>() != null)
+                    continue;
+
+                foundAnyFarmableTile = true;
+                if (tile.GetCondition != FarmTile.Condition.Watered)
+                {
+                    allWatered = false;
+                    break;
+                }
+            }
+
+            if (!foundAnyFarmableTile)
+                return;
+
+            GameManager gameManager = GameManager.Instance;
+            if (allWatered)
+            {
+                if (!gameManager.IsFlagSet(FarmWinController.AllTilesRewardGivenFlag))
+                {
+                    gameManager.AddFunds(FallbackAllTilesRewardFunds);
+                    gameManager.SetFlag(FarmWinController.AllTilesRewardGivenFlag, true);
+                }
+            }
+            else
+            {
+                gameManager.SetFlag(FarmWinController.AllTilesRewardGivenFlag, false);
+            }
         }
     }
 }

@@ -1,32 +1,14 @@
 using Core;
+using Farming;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class StorePurchaseController : MonoBehaviour
+public class StorePurchaseController : SeedPurchaseControllerBase
 {
-    [Header("Purchase Settings")]
-    [SerializeField] private int seedCost = 10;
-    [SerializeField] private int seedsPerPurchase = 1;
-
-    [Header("Optional UI References")]
+    [Header("Store UI")]
     [SerializeField] private Button purchaseButton;
     [SerializeField] private TMP_Text purchaseButtonText;
-    [SerializeField] private TMP_Text feedbackText;
-
-    [Header("Messages")]
-    [SerializeField] private string insufficientFundsMessage = "Not enough funds.";
-
-    private GameManager gameManager;
-
-    private void OnValidate()
-    {
-        if (seedCost < 1)
-            seedCost = 1;
-
-        if (seedsPerPurchase < 1)
-            seedsPerPurchase = 1;
-    }
 
     private void Start()
     {
@@ -49,21 +31,7 @@ public class StorePurchaseController : MonoBehaviour
 
     public void PurchaseSeeds()
     {
-        if (gameManager == null)
-            gameManager = GameManager.Instance;
-
-        if (gameManager.TrySpendFunds(seedCost))
-        {
-            gameManager.AddSeeds(seedsPerPurchase);
-            if (feedbackText != null)
-                feedbackText.SetText("Purchased {0} seed(s).", seedsPerPurchase);
-        }
-        else
-        {
-            if (feedbackText != null)
-                feedbackText.text = insufficientFundsMessage;
-        }
-
+        TryPurchaseAndNotify();
         UpdatePurchaseAvailability(gameManager.Funds);
     }
 

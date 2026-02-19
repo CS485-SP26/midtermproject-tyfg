@@ -48,6 +48,12 @@ public class Farmer : MonoBehaviour
         if (tile == null)
             return;
 
+        if (tile.TryGetComponent<SeedPurchaseTile>(out SeedPurchaseTile purchaseTile))
+        {
+            purchaseTile.TryPurchaseFromFarmer(this);
+            return;
+        }
+
         switch (tile.GetCondition)
         {
             case FarmTile.Condition.Grass:

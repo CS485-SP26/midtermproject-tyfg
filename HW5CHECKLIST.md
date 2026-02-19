@@ -30,9 +30,9 @@
 - [ ] Verify travel Farm -> Store -> Farm repeatedly without errors
 
 ## Part 6 - Purchase Loop
-- [ ] Add win condition in farm scene: all tiles watered simultaneously
+- [x] Add win condition in farm scene: all tiles watered simultaneously
 - [ ] Show congrats message when win condition is met
-- [ ] Award funds once (no infinite repeat)
+- [x] Award funds once (no infinite repeat)
 - [ ] Store scene: show `Purchase Seeds` button with cost
 - [ ] Purchase consumes funds and increases seeds
 - [ ] Add/update UI text: `Seeds: [count]`
@@ -59,7 +59,7 @@
 - [ ] Submit on Canvas before **Fri Feb 20, 2026 11:59 PM**
 
 ## Team Tracking (edit as you go)
-- [ ] Teammate A: __________________
-- [ ] Teammate B: __________________
-- [ ] Teammate C: __________________
+- [x] Teammate A: _________Anthony Douglas_________
+- [ ] Teammate B: ________Tyler Usrey__________
+- [ ] Teammate C: ________Julian__________
 - [ ] Teammate D: __________________
