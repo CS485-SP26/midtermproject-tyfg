@@ -2,14 +2,13 @@ using UnityEngine;
 using Farming;
 using Character;
 
-
 public class Farmer : MonoBehaviour
 {
     [SerializeField] private GameObject wateringCan;
     [SerializeField] private GameObject gardenHoe;
     [SerializeField] private ProgressBar waterLevelUI;
 
-    [SerializeField] private float waterLevel = 1f;   // 0–1
+    [SerializeField] private float waterLevel = 1f; // 0-1
     [SerializeField] private float waterPerUse = 0.1f;
 
     private AnimatedController animatedController;
@@ -19,9 +18,10 @@ public class Farmer : MonoBehaviour
         animatedController = GetComponent<AnimatedController>();
         Debug.Assert(animatedController, "Farmer requires an AnimatedController");
 
-        waterLevelUI.SetText("Water Level");
-        waterLevelUI.Fill = waterLevel;
+        if (waterLevelUI != null)
+            waterLevelUI.SetText("Water Level");
 
+        SetWaterLevel(waterLevel);
         SetTool("None");
     }
 
@@ -59,16 +59,8 @@ public class Farmer : MonoBehaviour
                 if (waterLevel > 0f)
                 {
                     animatedController.SetTrigger("Water");
-
-                    waterLevel -= waterPerUse;
-                    waterLevel = Mathf.Clamp01(waterLevel);
-
-                    if (waterLevel < 0.01f)
-                        waterLevel = 0f;
-
-                    waterLevelUI.Fill = waterLevel;
-
-                    tile.Interact(); // ONLY water when you have water
+                    SetWaterLevel(waterLevel - waterPerUse);
+                    tile.Interact(); // only water when you have water
                 }
                 else
                 {
@@ -82,4 +74,18 @@ public class Farmer : MonoBehaviour
         }
     }
 
+    public void RefillWaterToFull()
+    {
+        SetWaterLevel(1f);
+    }
+
+    private void SetWaterLevel(float value)
+    {
+        waterLevel = Mathf.Clamp01(value);
+        if (waterLevel < 0.01f)
+            waterLevel = 0f;
+
+        if (waterLevelUI != null)
+            waterLevelUI.Fill = waterLevel;
+    }
 }
