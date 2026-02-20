@@ -44,7 +44,7 @@ public class CurrencyTextUI : MonoBehaviour
         }
 
         instance = this;
-        DontDestroyOnLoad(gameObject);
+       // DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()

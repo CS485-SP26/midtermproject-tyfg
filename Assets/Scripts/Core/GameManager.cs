@@ -50,6 +50,7 @@ namespace Core
             SceneManager.sceneLoaded -= HandleSceneLoaded;
             SceneManager.sceneLoaded += HandleSceneLoaded;
             EnsureSingleAudioListener();
+            Debug.Log("GameManager initialized with Funds: " + Funds + ", Seeds: " + Seeds);
         }
 
         private void OnDestroy()
