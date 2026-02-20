@@ -31,12 +31,12 @@
 
 ## Part 6 - Purchase Loop
 - [x] Add win condition in farm scene: all tiles watered simultaneously
-- [ ] Show congrats message when win condition is met
+- [x] Show congrats message when win condition is met
 - [x] Award funds once (no infinite repeat)
 - [ ] Store scene: show `Purchase Seeds` button with cost
 - [ ] Purchase consumes funds and increases seeds
 - [ ] Add/update UI text: `Seeds: [count]`
-- [ ] Verify full gameplay loop: water -> earn funds -> buy seeds
+- [~] Verify full gameplay loop: water -> earn funds -> buy seeds
 
 ## Build Settings
 - [x] `Scene0-Intro` in build settings

@@ -19,6 +19,7 @@ public class CurrencyTextUI : MonoBehaviour
     [Header("Auto-Bind Names")]
     [SerializeField] private string fundsObjectName = "FundAmount";
     [SerializeField] private string seedsObjectName = "SeedAmount";
+    [SerializeField] private float seedLabelVerticalSpacing = 6f;
 
     private GameManager gameManager;
     private int lastRenderedFunds = int.MinValue;
@@ -148,6 +149,51 @@ public class CurrencyTextUI : MonoBehaviour
 
         if (seedsText == null)
             seedsText = FindTextByName(seedsObjectName);
+
+        if (seedsText == null)
+            seedsText = CreateSeedsTextBelowFunds();
+    }
+
+    private TMP_Text CreateSeedsTextBelowFunds()
+    {
+        if (fundsText == null || string.IsNullOrWhiteSpace(seedsObjectName))
+            return null;
+
+        TMP_Text existing = FindTextByName(seedsObjectName);
+        if (existing != null)
+            return existing;
+
+        TextMeshProUGUI fundsLabel = fundsText as TextMeshProUGUI;
+        if (fundsLabel == null)
+            return null;
+
+        RectTransform fundsRect = fundsLabel.rectTransform;
+        if (fundsRect == null || fundsRect.parent == null)
+            return null;
+
+        GameObject go = new GameObject(seedsObjectName, typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(fundsRect.parent, false);
+
+        TextMeshProUGUI seedsLabelText = go.GetComponent<TextMeshProUGUI>();
+        seedsLabelText.font = fundsLabel.font;
+        seedsLabelText.fontSharedMaterial = fundsLabel.fontSharedMaterial;
+        seedsLabelText.fontSize = fundsLabel.fontSize;
+        seedsLabelText.color = fundsLabel.color;
+        seedsLabelText.alignment = fundsLabel.alignment;
+        seedsLabelText.raycastTarget = fundsLabel.raycastTarget;
+        seedsLabelText.enableWordWrapping = false;
+        seedsLabelText.text = $"{seedsLabel} 0";
+
+        RectTransform seedsRect = seedsLabelText.rectTransform;
+        seedsRect.anchorMin = fundsRect.anchorMin;
+        seedsRect.anchorMax = fundsRect.anchorMax;
+        seedsRect.pivot = fundsRect.pivot;
+        seedsRect.sizeDelta = fundsRect.sizeDelta;
+
+        float lineHeight = fundsRect.sizeDelta.y > 1f ? fundsRect.sizeDelta.y : (fundsLabel.fontSize + 8f);
+        seedsRect.anchoredPosition = fundsRect.anchoredPosition + new Vector2(0f, -(lineHeight + seedLabelVerticalSpacing));
+
+        return seedsLabelText;
     }
 
     private static TMP_Text FindTextByName(string targetName)
