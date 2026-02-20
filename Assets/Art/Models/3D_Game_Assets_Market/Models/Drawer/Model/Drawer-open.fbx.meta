@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8975241a652783644afdae63d50d57bd
+guid: 9e1a24d9330e5ae4fb8926f805b31bb8
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -110,5 +110,5 @@ AssetOrigin:
   productId: 318843
   packageName: 3D_Game_Assets_Market
   packageVersion: 1.0.0
-  assetPath: Assets/Art/Models/3D_Game_Assets_Market/Models/Rack/Model/Rack_1.fbx
+  assetPath: Assets/Art/Models/3D_Game_Assets_Market/Models/Drawer/Model/Drawer-open.fbx
   uploadId: 752903
