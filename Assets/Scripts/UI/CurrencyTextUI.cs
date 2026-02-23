@@ -44,7 +44,7 @@ public class CurrencyTextUI : MonoBehaviour
         }
 
         instance = this;
-       // DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()
@@ -131,6 +131,9 @@ public class CurrencyTextUI : MonoBehaviour
         lastRenderedFunds = funds;
     }
 
+    /*
+    * This feels like it should be refactored.
+    */
     private void UpdateSeedsText(int seeds)
     {
         if (seedsText == null)
@@ -181,7 +184,7 @@ public class CurrencyTextUI : MonoBehaviour
         seedsLabelText.color = fundsLabel.color;
         seedsLabelText.alignment = fundsLabel.alignment;
         seedsLabelText.raycastTarget = fundsLabel.raycastTarget;
-        seedsLabelText.textWrappingMode = TextWrappingModes.NoWrap;
+        seedsLabelText.enableWordWrapping = false;
         seedsLabelText.text = $"{seedsLabel} 0";
 
         RectTransform seedsRect = seedsLabelText.rectTransform;
