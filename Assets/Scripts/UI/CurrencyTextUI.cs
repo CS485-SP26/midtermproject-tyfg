@@ -184,7 +184,7 @@ public class CurrencyTextUI : MonoBehaviour
         seedsLabelText.color = fundsLabel.color;
         seedsLabelText.alignment = fundsLabel.alignment;
         seedsLabelText.raycastTarget = fundsLabel.raycastTarget;
-        seedsLabelText.enableWordWrapping = false;
+        seedsLabelText.textWrappingMode = TextWrappingModes.NoWrap;
         seedsLabelText.text = $"{seedsLabel} 0";
 
         RectTransform seedsRect = seedsLabelText.rectTransform;
