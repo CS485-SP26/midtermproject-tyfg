@@ -66,7 +66,7 @@ Files:
 I split purchase logic into a reusable base and mode-specific controllers:
 - `SeedPurchaseControllerBase` centralizes spend/add-seed logic + notifications
 - `SeedPurchaseTrigger` supports collider-based fake store purchases (with cooldown/repeat)
-- `SeedPurchaseTile` supports tile-select + interact-key purchasing
+- `SeedPurchaseTile` supports tile-select + interact-key purchasing *I might need to fix this*
 - `StorePurchaseController` supports button-based purchasing for future real store scene
 - `FloatingTextPopup` makes purchase notifications float up/fade for repeated buys
 
