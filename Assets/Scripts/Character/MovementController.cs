@@ -240,6 +240,7 @@ namespace Character
         public float VerticalVelocity => rb.linearVelocity.y;
         public bool IsNearGround => groundProximity && groundProximity.nearGround;
         public bool IsCrouching => isCrouching;
+        public bool HasMovementInput => moveInput.sqrMagnitude > 0.01f;
 
         // Backwards-compatible wrappers while transitioning call sites.
         public bool IsGroundedState() => IsGrounded;

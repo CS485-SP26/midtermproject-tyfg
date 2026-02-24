@@ -22,6 +22,12 @@ namespace Environment
 
         public UnityEvent dayPassedEvent = new UnityEvent(); // Invoke() at end of day
 
+        private void Start()
+        {
+            if (dayLabel != null)
+                dayLabel.SetText("Days: {0}", currentDay);
+        }
+
         public void AdvanceDay()
         {
             Debug.Assert(sunLight, "DayController requires a 'Sun'");

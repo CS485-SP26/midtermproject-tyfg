@@ -20,13 +20,29 @@ public class CurrencyTextUI : MonoBehaviour
     [SerializeField] private string fundsObjectName = "FundAmount";
     [SerializeField] private string seedsObjectName = "SeedAmount";
     [SerializeField] private float seedLabelVerticalSpacing = 6f;
+    [SerializeField] private Vector2 fallbackFundsAnchoredPosition = new Vector2(-28f, -22f);
+    [SerializeField] private Vector2 fallbackLabelSize = new Vector2(220f, 44f);
+    [SerializeField] private bool allowAutoCreatedFundsFallback = true;
 
     private GameManager gameManager;
     private int lastRenderedFunds = int.MinValue;
     private int lastRenderedSeeds = int.MinValue;
+    private bool fundsTextWasAutoCreated;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void EnsureInstance()
+    private static void RegisterSceneBootstrap()
+    {
+        SceneManager.sceneLoaded -= HandleStaticSceneLoaded;
+        SceneManager.sceneLoaded += HandleStaticSceneLoaded;
+        EnsureInstanceInActiveScene();
+    }
+
+    private static void HandleStaticSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        EnsureInstanceInActiveScene();
+    }
+
+    private static void EnsureInstanceInActiveScene()
     {
         if (FindObjectsByType<CurrencyTextUI>(FindObjectsSortMode.None).Length > 0)
             return;
@@ -39,12 +55,12 @@ public class CurrencyTextUI : MonoBehaviour
     {
         if (instance != null && instance != this)
         {
-            Destroy(gameObject);
+            // Keep scene UI objects intact; only remove duplicate manager components.
+            Destroy(this);
             return;
         }
 
         instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()
@@ -85,9 +101,6 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void Update()
     {
-        if (SceneManager.GetActiveScene().name == "Scene0-Intro")
-            return;
-
         if (gameManager == null)
             BindGameManager();
 
@@ -147,14 +160,31 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void AutoBindTextTargets()
     {
-        if (fundsText == null)
-            fundsText = FindTextByName(fundsObjectName);
+        CleanupLegacyAutoFundsTexts();
+
+        TMP_Text namedFunds = FindTextByName(fundsObjectName);
+        TMP_Text fundsLike = FindFundsLikeText();
+        TMP_Text preferredFunds = namedFunds != null ? namedFunds : fundsLike;
+
+        if (preferredFunds != null && preferredFunds != fundsText)
+        {
+            if (fundsTextWasAutoCreated && fundsText != null && fundsText.gameObject != null)
+                Destroy(fundsText.gameObject);
+
+            fundsText = preferredFunds;
+            fundsTextWasAutoCreated = false;
+        }
+
+        if (fundsText == null && allowAutoCreatedFundsFallback)
+            fundsText = CreateFundsTextFallback();
 
         if (seedsText == null)
             seedsText = FindTextByName(seedsObjectName);
 
         if (seedsText == null)
             seedsText = CreateSeedsTextBelowFunds();
+
+        AlignSeedsTextBelowFunds();
     }
 
     private TMP_Text CreateSeedsTextBelowFunds()
@@ -194,9 +224,99 @@ public class CurrencyTextUI : MonoBehaviour
         seedsRect.sizeDelta = fundsRect.sizeDelta;
 
         float lineHeight = fundsRect.sizeDelta.y > 1f ? fundsRect.sizeDelta.y : (fundsLabel.fontSize + 8f);
-        seedsRect.anchoredPosition = fundsRect.anchoredPosition + new Vector2(0f, -(lineHeight + seedLabelVerticalSpacing));
+        float spacing = Mathf.Max(seedLabelVerticalSpacing, 12f);
+        seedsRect.anchoredPosition = fundsRect.anchoredPosition + new Vector2(0f, -(lineHeight + spacing));
 
         return seedsLabelText;
+    }
+
+    private TMP_Text CreateFundsTextFallback()
+    {
+        if (string.IsNullOrWhiteSpace(fundsObjectName))
+            fundsObjectName = "FundAmount";
+
+        Canvas canvas = ResolveCanvas();
+        if (canvas == null)
+            return null;
+
+        GameObject go = new GameObject($"{fundsObjectName}_Auto", typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(canvas.transform, false);
+
+        TextMeshProUGUI fundsLabelText = go.GetComponent<TextMeshProUGUI>();
+        fundsLabelText.text = $"{fundsLabel}0";
+        fundsLabelText.fontSize = 28f;
+        fundsLabelText.alignment = TextAlignmentOptions.TopRight;
+        fundsLabelText.color = Color.white;
+        fundsLabelText.raycastTarget = false;
+        fundsLabelText.textWrappingMode = TextWrappingModes.NoWrap;
+
+        RectTransform rt = fundsLabelText.rectTransform;
+        rt.anchorMin = new Vector2(1f, 1f);
+        rt.anchorMax = new Vector2(1f, 1f);
+        rt.pivot = new Vector2(1f, 1f);
+        rt.anchoredPosition = fallbackFundsAnchoredPosition;
+        rt.sizeDelta = fallbackLabelSize;
+
+        fundsTextWasAutoCreated = true;
+        return fundsLabelText;
+    }
+
+    private static Canvas ResolveCanvas()
+    {
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        foreach (Canvas canvas in canvases)
+        {
+            if (canvas != null && canvas.isActiveAndEnabled)
+                return canvas;
+        }
+
+        return null;
+    }
+
+    private void CleanupLegacyAutoFundsTexts()
+    {
+        string autoName = string.IsNullOrWhiteSpace(fundsObjectName) ? "FundAmount_Auto" : $"{fundsObjectName}_Auto";
+        TMP_Text[] allTexts = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
+        foreach (TMP_Text text in allTexts)
+        {
+            if (text == null || text == fundsText || text.gameObject == null)
+                continue;
+
+            if (text.name == autoName)
+                Destroy(text.gameObject);
+        }
+    }
+
+    private void AlignSeedsTextBelowFunds()
+    {
+        TextMeshProUGUI fundsLabel = fundsText as TextMeshProUGUI;
+        TextMeshProUGUI seedsLabel = seedsText as TextMeshProUGUI;
+        if (fundsLabel == null || seedsLabel == null)
+            return;
+
+        RectTransform fundsRect = fundsLabel.rectTransform;
+        RectTransform seedsRect = seedsLabel.rectTransform;
+        if (fundsRect == null || seedsRect == null)
+            return;
+
+        if (fundsRect.parent != null && seedsRect.parent != fundsRect.parent)
+            seedsRect.SetParent(fundsRect.parent, false);
+
+        seedsRect.anchorMin = fundsRect.anchorMin;
+        seedsRect.anchorMax = fundsRect.anchorMax;
+        seedsRect.pivot = fundsRect.pivot;
+        seedsRect.sizeDelta = fundsRect.sizeDelta;
+
+        float lineHeight = fundsRect.sizeDelta.y > 1f ? fundsRect.sizeDelta.y : (fundsLabel.fontSize + 8f);
+        float spacing = Mathf.Max(seedLabelVerticalSpacing, 12f);
+        seedsRect.anchoredPosition = fundsRect.anchoredPosition + new Vector2(0f, -(lineHeight + spacing));
+
+        seedsLabel.alignment = fundsLabel.alignment;
+        seedsLabel.font = fundsLabel.font;
+        seedsLabel.fontSharedMaterial = fundsLabel.fontSharedMaterial;
+        seedsLabel.fontSize = fundsLabel.fontSize;
+        seedsLabel.color = fundsLabel.color;
+        seedsLabel.raycastTarget = fundsLabel.raycastTarget;
     }
 
     private static TMP_Text FindTextByName(string targetName)
@@ -214,10 +334,28 @@ public class CurrencyTextUI : MonoBehaviour
         return null;
     }
 
+    private static TMP_Text FindFundsLikeText()
+    {
+        TMP_Text[] allTexts = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
+        foreach (TMP_Text text in allTexts)
+        {
+            if (text == null)
+                continue;
+
+            string objectName = string.IsNullOrWhiteSpace(text.name) ? string.Empty : text.name.ToLowerInvariant();
+            string label = string.IsNullOrWhiteSpace(text.text) ? string.Empty : text.text.ToLowerInvariant();
+
+            if (objectName.Contains("fund") || label.Contains("fund"))
+                return text;
+        }
+
+        return null;
+    }
+
     private void BindGameManager()
     {
         GameManager resolved = FindObjectsByType<GameManager>(FindObjectsSortMode.None).FirstOrDefault();
-        if (resolved == null && SceneManager.GetActiveScene().name != "Scene0-Intro")
+        if (resolved == null)
             resolved = GameManager.Instance;
 
         if (resolved == gameManager)

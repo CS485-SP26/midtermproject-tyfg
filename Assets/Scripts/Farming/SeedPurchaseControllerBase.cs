@@ -19,7 +19,7 @@ namespace Farming
         [SerializeField] private float notificationDurationSeconds = 0.9f;
         [SerializeField] private string insufficientFundsMessage = "Not enough funds to buy seeds.";
 
-        protected GameManager gameManager;
+        protected IEconomyService economyService;
 
         protected virtual void OnValidate()
         {
@@ -41,17 +41,17 @@ namespace Farming
 
         protected virtual void Awake()
         {
-            gameManager = GameManager.Instance;
+            economyService = GameManager.Instance;
         }
 
         protected bool TryPurchaseAndNotify()
         {
-            if (gameManager == null)
-                gameManager = GameManager.Instance;
+            if (economyService == null)
+                economyService = GameManager.Instance;
 
-            if (gameManager.TrySpendFunds(seedCost))
+            if (economyService != null && economyService.TrySpendResource(EconomyResource.Funds, seedCost))
             {
-                gameManager.AddSeeds(seedsPerPurchase);
+                economyService.AddResource(EconomyResource.Seeds, seedsPerPurchase);
                 SpawnFloatingNotification(BuildPurchaseSuccessMessage(), true);
                 OnPurchaseSucceeded();
                 return true;
@@ -64,6 +64,14 @@ namespace Farming
 
         protected virtual void OnPurchaseSucceeded() { }
         protected virtual void OnPurchaseFailed() { }
+
+        protected int GetFundsBalance()
+        {
+            if (economyService == null)
+                economyService = GameManager.Instance;
+
+            return economyService == null ? 0 : economyService.GetResourceAmount(EconomyResource.Funds);
+        }
 
         private string BuildPurchaseSuccessMessage()
         {

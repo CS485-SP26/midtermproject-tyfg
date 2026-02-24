@@ -35,7 +35,22 @@ namespace Character
         public void OnJump(InputValue inputValue)
         {
             if (inputValue.isPressed)
-                moveController.Jump();
+            {
+                if (moveController == null)
+                    return;
+
+                if (farmer == null)
+                {
+                    moveController.Jump();
+                    return;
+                }
+
+                if (!moveController.CanJump())
+                    return;
+
+                if (farmer.TryConsumeJumpEnergy())
+                    moveController.Jump();
+            }
         }
 
         // -------------------------
@@ -44,8 +59,8 @@ namespace Character
         public void OnInteract(InputValue value)
         {
             FarmTile tile = tileSelector.GetSelectedTile();
-           farmer.TryTileInteraction(tile);
-           Debug.Log("Interacting with tile: " + tile?.name);
+            farmer.TryTileInteraction(tile);
+            Debug.Log("Interacting with tile: " + tile?.name);
         }
 
         // -------------------------
@@ -54,6 +69,12 @@ namespace Character
         // -------------------------
         public void OnSprint(InputValue value)
         {
+            if (farmer != null)
+            {
+                farmer.SetSprintInput(value.isPressed);
+                return;
+            }
+
             moveController.SetSprint(value.isPressed);
         }
 
