@@ -9,10 +9,13 @@ namespace Farming
     {
         private const int FallbackAllTilesRewardFunds = 25;
 
-        public enum Condition { Grass, Tilled, Watered }
+        public enum Condition { Grass, Tilled, Watered, Planted }
 
         [SerializeField] private Condition tileCondition = Condition.Grass; 
+        [SerializeField] private Transform plantSpawnPoint;
+        [SerializeField] private GameObject plantPrefab;
 
+private Plant currentPlant;
         [Header("Visuals")]
         [SerializeField] private Material grassMaterial;
         [SerializeField] private Material tilledMaterial;
@@ -46,7 +49,7 @@ namespace Farming
             {
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
-                case FarmTile.Condition.Watered: Debug.Log("Ready for planting"); break;
+               case FarmTile.Condition.Watered: PlantSeed();break;
             }
             daysSinceLastInteraction = 0;
             FarmWinController.NotifyTileStatePotentiallyChanged();
@@ -62,9 +65,34 @@ namespace Farming
 
         public void Water()
         {
-            tileCondition = FarmTile.Condition.Watered;
+            if (tileCondition == Condition.Planted && currentPlant != null)
+             {
+                currentPlant.AddWater(1f);
+                waterAudio?.Play();
+                return;
+            }
+
+            tileCondition = Condition.Watered;
             UpdateVisual();
             waterAudio?.Play();
+        }
+        private void PlantSeed()
+        {
+            if (currentPlant != null)
+                return;
+
+            GameObject plantObj = Instantiate(plantPrefab, plantSpawnPoint.position, Quaternion.identity);
+            currentPlant = plantObj.GetComponent<Plant>();
+
+            tileCondition = Condition.Planted;
+            UpdateVisual();
+        }
+        private void ClearPlant()
+        {
+            Destroy(currentPlant.gameObject);
+            currentPlant = null;
+            tileCondition = Condition.Grass;
+            UpdateVisual();
         }
 
         private void UpdateVisual()
@@ -98,6 +126,14 @@ namespace Farming
         {
             Condition previousCondition = tileCondition;
             daysSinceLastInteraction++;
+            if (tileCondition == Condition.Planted && currentPlant != null)
+            {
+                if (currentPlant.CurrentState == PlantState.Withered)
+                {
+                    ClearPlant();
+                }
+            }
+
             if(daysSinceLastInteraction >= 2)
             {
                 if(tileCondition == FarmTile.Condition.Watered) tileCondition = FarmTile.Condition.Tilled;
