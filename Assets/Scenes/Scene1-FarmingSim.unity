@@ -2321,6 +2321,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -2863,6 +2865,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -3420,6 +3424,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -4049,9 +4055,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Farmer
   wateringCan: {fileID: 1489264305}
   gardenHoe: {fileID: 1359721264}
+  energyLevelUI: {fileID: 0}
   waterLevelUI: {fileID: 804849415}
-  waterLevel: 1
+  energyBarObjectName: EnergyBar
+  waterBarObjectName: WaterBar
+  staminaBarColor: {r: 1, g: 0.86, b: 0.2, a: 1}
+  maxEnergy: 100
+  startingEnergy: 100
+  energyRegenPerSecond: 8
+  tillEnergyCost: 15
+  jumpEnergyCost: 12
+  sprintEnergyDrainPerSecond: 15
+  maxWater: 100
+  startingWater: 100
   waterPerUse: 0.1
+  migrateLegacyWaterValues: 1
+  notificationCanvas: {fileID: 0}
+  feedbackAnchor: {x: 0.5, y: 0.28}
+  feedbackSize: {x: 420, y: 48}
+  feedbackFontSize: 20
+  feedbackDurationSeconds: 0.8
+  feedbackRisePixels: 28
+  feedbackCooldownSeconds: 0.6
+  lowEnergyMessage: Not enough energy.
+  lowWaterMessage: Out of water. Refill at the shed.
 --- !u!95 &431992764
 Animator:
   serializedVersion: 7
@@ -4186,6 +4213,57 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 455555335}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &518014849
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 518014851}
+  - component: {fileID: 518014850}
+  m_Layer: 0
+  m_Name: Plant
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &518014850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 518014849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f06f0a2847c4c194cb9bbbdd9f74e172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Plant
+  waterNeededToGrow: 5
+  waterDecayPerSecond: 0.2
+  growTime: 10
+  plantedModel: {fileID: 1000011580534764, guid: c26cacf51e485c54b95fdbf9ad976ddf, type: 3}
+  growingModel: {fileID: 1000013410243764, guid: 56b36da289d9a9e4cb37c5f588e23748, type: 3}
+  matureModel: {fileID: 1000014111768446, guid: 2cf13a738fc434c46bda5ebf7ca44756, type: 3}
+  witheredModel: {fileID: 1000011580534764, guid: c26cacf51e485c54b95fdbf9ad976ddf, type: 3}
+--- !u!4 &518014851
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 518014849}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.6466, y: 0.05, z: 4.79486}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &531808571
 GameObject:
   m_ObjectHideFlags: 0
@@ -4826,6 +4904,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -5256,6 +5336,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -5686,6 +5768,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -6562,6 +6646,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -7227,6 +7313,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -9094,6 +9182,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -10084,6 +10174,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -10749,6 +10841,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -11179,6 +11273,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -11609,6 +11705,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -12141,6 +12239,9 @@ MonoBehaviour:
   fundsObjectName: FundAmount
   seedsObjectName: SeedAmount
   seedLabelVerticalSpacing: 6
+  fallbackFundsAnchoredPosition: {x: -28, y: -22}
+  fallbackLabelSize: {x: 220, y: 44}
+  allowAutoCreatedFundsFallback: 1
 --- !u!1 &1458930303
 GameObject:
   m_ObjectHideFlags: 0
@@ -13550,6 +13651,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -15923,6 +16026,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -16538,6 +16643,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  plantSpawnPoint: {fileID: 0}
+  plantPrefab: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -17327,3 +17434,4 @@ SceneRoots:
   - {fileID: 1832991199}
   - {fileID: 654905152}
   - {fileID: 111991793}
+  - {fileID: 518014851}
