@@ -119,6 +119,13 @@ public class StorePurchaseController : SeedPurchaseControllerBase
 
     private void TryAutoBindUI()
     {
+        if (purchaseButton != null && !IsUsableStoreButton(purchaseButton))
+        {
+            purchaseButton = null;
+            purchaseButtonText = null;
+            purchaseButtonWasAutoCreated = false;
+        }
+
         if (purchaseButton == null)
         {
             purchaseButton = FindLikelyPurchaseButton();
@@ -143,10 +150,17 @@ public class StorePurchaseController : SeedPurchaseControllerBase
 
     private static Button FindLikelyPurchaseButton()
     {
+        Scene activeScene = SceneManager.GetActiveScene();
         Button[] allButtons = FindObjectsByType<Button>(FindObjectsSortMode.None);
         foreach (Button button in allButtons)
         {
             if (button == null)
+                continue;
+
+            if (!BelongsToScene(button.gameObject, activeScene))
+                continue;
+
+            if (!HasUsableRaycaster(button))
                 continue;
 
             string text = GetButtonText(button);
@@ -161,6 +175,12 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         foreach (Button button in allButtons)
         {
             if (button == null)
+                continue;
+
+            if (!BelongsToScene(button.gameObject, activeScene))
+                continue;
+
+            if (!HasUsableRaycaster(button))
                 continue;
 
             if (IsLikelyLeaveButton(button))
@@ -211,6 +231,39 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         purchaseButtonText = CreateButtonLabel(buttonGo.transform, FindStyleReferenceButton());
         purchaseButtonWasAutoCreated = true;
         return button;
+    }
+
+    private static bool IsUsableStoreButton(Button button)
+    {
+        if (button == null || button.gameObject == null)
+            return false;
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!BelongsToScene(button.gameObject, activeScene))
+            return false;
+
+        return HasUsableRaycaster(button);
+    }
+
+    private static bool BelongsToScene(GameObject gameObject, Scene scene)
+    {
+        if (gameObject == null || !scene.IsValid())
+            return false;
+
+        return gameObject.scene.IsValid() && gameObject.scene.handle == scene.handle;
+    }
+
+    private static bool HasUsableRaycaster(Button button)
+    {
+        if (button == null)
+            return false;
+
+        Canvas parentCanvas = button.GetComponentInParent<Canvas>(true);
+        if (parentCanvas == null || !parentCanvas.isActiveAndEnabled)
+            return false;
+
+        GraphicRaycaster raycaster = parentCanvas.GetComponent<GraphicRaycaster>();
+        return raycaster != null && raycaster.isActiveAndEnabled;
     }
 
     private static TMP_Text CreateButtonLabel(Transform parent, Button styleSource)
@@ -348,10 +401,36 @@ public class StorePurchaseController : SeedPurchaseControllerBase
 
     private static Canvas ResolveCanvas()
     {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (activeScene.IsValid())
+        {
+            GameObject[] roots = activeScene.GetRootGameObjects();
+            foreach (GameObject root in roots)
+            {
+                if (root == null)
+                    continue;
+
+                Canvas[] canvasesInScene = root.GetComponentsInChildren<Canvas>(true);
+                foreach (Canvas canvas in canvasesInScene)
+                {
+                    if (canvas == null || !canvas.isActiveAndEnabled)
+                        continue;
+
+                    GraphicRaycaster raycaster = canvas.GetComponent<GraphicRaycaster>();
+                    if (raycaster != null && raycaster.isActiveAndEnabled)
+                        return canvas;
+                }
+            }
+        }
+
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         foreach (Canvas canvas in canvases)
         {
-            if (canvas != null && canvas.isActiveAndEnabled)
+            if (canvas == null || !canvas.isActiveAndEnabled)
+                continue;
+
+            GraphicRaycaster raycaster = canvas.GetComponent<GraphicRaycaster>();
+            if (raycaster != null && raycaster.isActiveAndEnabled)
                 return canvas;
         }
 
