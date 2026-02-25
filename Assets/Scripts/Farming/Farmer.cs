@@ -44,6 +44,7 @@ public class Farmer : MonoBehaviour
 
     private AnimatedController animatedController;
     private MovementController movementController;
+    private FarmerResourceState resourceState;
     private float currentEnergy;
     private float currentWater;
     private bool sprintInputHeld;
@@ -76,6 +77,14 @@ public class Farmer : MonoBehaviour
         Debug.Assert(movementController, "Farmer requires a MovementController");
 
         ApplyLegacyWaterMigration();
+        resourceState = FarmerResourceState.Instance;
+        if (resourceState != null)
+        {
+            resourceState.Configure(maxEnergy, maxWater, energyRegenPerSecond, energyBarObjectName, waterBarObjectName);
+            resourceState.InitializeIfNeeded(startingEnergy, startingWater);
+            resourceState.SetFarmerPresent(true);
+        }
+
         AutoBindProgressBars();
         EnsureBothProgressBars();
 
@@ -87,9 +96,32 @@ public class Farmer : MonoBehaviour
         if (waterLevelUI != null)
             waterLevelUI.SetText("Water Level");
 
-        SetEnergyLevel(startingEnergy);
-        SetWaterLevel(startingWater);
+        float initialEnergy = resourceState != null && resourceState.IsInitialized ? resourceState.CurrentEnergy : startingEnergy;
+        float initialWater = resourceState != null && resourceState.IsInitialized ? resourceState.CurrentWater : startingWater;
+        SetEnergyLevel(initialEnergy);
+        SetWaterLevel(initialWater);
         SetTool("None");
+    }
+
+    private void OnEnable()
+    {
+        if (resourceState == null)
+            resourceState = FarmerResourceState.Instance;
+
+        if (resourceState != null)
+            resourceState.SetFarmerPresent(true);
+    }
+
+    private void OnDisable()
+    {
+        if (resourceState != null)
+            resourceState.SetFarmerPresent(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (resourceState != null)
+            resourceState.SetFarmerPresent(false);
     }
 
     private void Update()
@@ -254,6 +286,9 @@ public class Farmer : MonoBehaviour
 
         if (energyLevelUI != null)
             energyLevelUI.Fill = normalized;
+
+        if (resourceState != null)
+            resourceState.SetEnergy(currentEnergy);
     }
 
     private void SetWaterLevel(float value)
@@ -263,6 +298,9 @@ public class Farmer : MonoBehaviour
 
         if (waterLevelUI != null)
             waterLevelUI.Fill = normalized;
+
+        if (resourceState != null)
+            resourceState.SetWater(currentWater);
     }
 
     private void ShowActionBlockedFeedback(string message)
@@ -368,7 +406,7 @@ public class Farmer : MonoBehaviour
         }
 
         if (count == 0)
-            return System.Array.Empty<ProgressBar>();
+            return FindObjectsByType<ProgressBar>(FindObjectsSortMode.None);
 
         ProgressBar[] result = new ProgressBar[count];
         int index = 0;

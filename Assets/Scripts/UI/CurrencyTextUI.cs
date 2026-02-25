@@ -6,6 +6,7 @@ using System.Linq;
 
 public class CurrencyTextUI : MonoBehaviour
 {
+    private const string IntroSceneName = "Scene0-Intro";
     private static CurrencyTextUI instance;
 
     [Header("Label Targets")]
@@ -23,6 +24,12 @@ public class CurrencyTextUI : MonoBehaviour
     [SerializeField] private Vector2 fallbackFundsAnchoredPosition = new Vector2(-28f, -22f);
     [SerializeField] private Vector2 fallbackLabelSize = new Vector2(220f, 44f);
     [SerializeField] private bool allowAutoCreatedFundsFallback = true;
+
+    [Header("Unified HUD Style")]
+    [SerializeField] private bool enforceUnifiedHudStyle = true;
+    [SerializeField] private float unifiedHudFontSize = 28f;
+    [SerializeField] private Color unifiedHudTextColor = Color.white;
+    [SerializeField] private TextAlignmentOptions unifiedHudAlignment = TextAlignmentOptions.TopRight;
 
     private GameManager gameManager;
     private int lastRenderedFunds = int.MinValue;
@@ -70,9 +77,7 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void Start()
     {
-        BindGameManager();
-        AutoBindTextTargets();
-        RefreshAll();
+        RefreshForCurrentScene();
     }
 
     private void OnDisable()
@@ -94,13 +99,29 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (IsIntroScene(scene))
+        {
+            HideHudForIntroScene();
+            return;
+        }
+
         BindGameManager();
         AutoBindTextTargets();
+        ApplyUnifiedHudStyle();
         RefreshAll();
     }
 
     private void Update()
     {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (IsIntroScene(activeScene))
+        {
+            HideHudForIntroScene();
+            return;
+        }
+
+        EnsureHudVisible();
+
         if (gameManager == null)
             BindGameManager();
 
@@ -160,6 +181,9 @@ public class CurrencyTextUI : MonoBehaviour
 
     private void AutoBindTextTargets()
     {
+        if (IsIntroScene(SceneManager.GetActiveScene()))
+            return;
+
         CleanupLegacyAutoFundsTexts();
 
         TMP_Text namedFunds = FindTextByName(fundsObjectName);
@@ -374,5 +398,87 @@ public class CurrencyTextUI : MonoBehaviour
             gameManager.FundsChanged += HandleFundsChanged;
             gameManager.SeedsChanged += HandleSeedsChanged;
         }
+    }
+
+    private void RefreshForCurrentScene()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (IsIntroScene(activeScene))
+        {
+            HideHudForIntroScene();
+            return;
+        }
+
+        EnsureHudVisible();
+        BindGameManager();
+        AutoBindTextTargets();
+        ApplyUnifiedHudStyle();
+        RefreshAll();
+    }
+
+    private static bool IsIntroScene(Scene scene)
+    {
+        return scene.IsValid() && string.Equals(scene.name, IntroSceneName, System.StringComparison.Ordinal);
+    }
+
+    private void HideHudForIntroScene()
+    {
+        CleanupLegacyAutoFundsTexts();
+        SetHudLabelActive(fundsText, false);
+        SetHudLabelActive(seedsText, false);
+    }
+
+    private void EnsureHudVisible()
+    {
+        SetHudLabelActive(fundsText, true);
+        SetHudLabelActive(seedsText, true);
+    }
+
+    private static void SetHudLabelActive(TMP_Text label, bool active)
+    {
+        if (label == null || label.gameObject == null)
+            return;
+
+        if (label.gameObject.activeSelf != active)
+            label.gameObject.SetActive(active);
+    }
+
+    private void ApplyUnifiedHudStyle()
+    {
+        if (!enforceUnifiedHudStyle)
+            return;
+
+        TextMeshProUGUI fundsLabel = fundsText as TextMeshProUGUI;
+        if (fundsLabel != null)
+            ApplyUnifiedTextStyle(fundsLabel, fallbackFundsAnchoredPosition);
+
+        TextMeshProUGUI seedsLabel = seedsText as TextMeshProUGUI;
+        if (seedsLabel != null)
+        {
+            ApplyUnifiedTextStyle(seedsLabel, fallbackFundsAnchoredPosition);
+            AlignSeedsTextBelowFunds();
+        }
+    }
+
+    private void ApplyUnifiedTextStyle(TextMeshProUGUI label, Vector2 anchoredPosition)
+    {
+        if (label == null)
+            return;
+
+        label.fontSize = unifiedHudFontSize;
+        label.color = unifiedHudTextColor;
+        label.alignment = unifiedHudAlignment;
+        label.raycastTarget = false;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+
+        RectTransform rect = label.rectTransform;
+        if (rect == null)
+            return;
+
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = fallbackLabelSize;
     }
 }

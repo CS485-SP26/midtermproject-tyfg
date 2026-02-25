@@ -100,6 +100,7 @@ public class ProgressBar : MonoBehaviour
         {
             backgroundImage.enabled = true;
             backgroundImage.color = new Color(1f, 1f, 1f, Mathf.Max(0.7f, backgroundImage.color.a));
+            backgroundImage.raycastTarget = false;
         }
 
         if (fillImage == null)
@@ -118,6 +119,10 @@ public class ProgressBar : MonoBehaviour
         fillImage.fillOrigin = 0;
         fillImage.fillClockwise = true;
         fillImage.fillAmount = Mathf.Clamp01(fillImage.fillAmount);
+        fillImage.raycastTarget = false;
+
+        if (fillText != null)
+            fillText.raycastTarget = false;
     }
 
     private Image FindImageByName(string targetName)

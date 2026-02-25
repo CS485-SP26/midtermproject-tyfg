@@ -114,7 +114,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
     private void UpdatePurchaseAvailability(int funds)
     {
         if (purchaseButton != null)
-            purchaseButton.interactable = funds >= seedCost;
+            purchaseButton.interactable = true;
     }
 
     private void TryAutoBindUI()
