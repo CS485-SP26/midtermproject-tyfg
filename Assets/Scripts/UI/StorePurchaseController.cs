@@ -10,6 +10,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
 {
     private const string StoreSceneName = "Scene2-Store";
     private const string AutoCreatedButtonName = "PurchaseSeedsButton";
+    private static readonly string[] PurchaseButtonNameHints = { "purchase", "buy", "seed" };
     private static readonly Vector2 TitleStyleButtonSize = new Vector2(160f, 30f);
     private static readonly Vector2 TitleStyleButtonPosition = new Vector2(2f, -77f);
 
@@ -128,7 +129,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
 
         if (purchaseButton == null)
         {
-            purchaseButton = FindLikelyPurchaseButton();
+            purchaseButton = FindExplicitPurchaseButton();
             purchaseButtonWasAutoCreated = false;
         }
 
@@ -143,12 +144,18 @@ public class StorePurchaseController : SeedPurchaseControllerBase
 
         purchaseButton.onClick.RemoveListener(PurchaseSeeds);
         purchaseButton.onClick.AddListener(PurchaseSeeds);
+        purchaseButton.enabled = true;
+        purchaseButton.interactable = true;
+
+        Graphic targetGraphic = purchaseButton.targetGraphic;
+        if (targetGraphic != null)
+            targetGraphic.raycastTarget = true;
 
         if (purchaseButtonText == null)
             purchaseButtonText = purchaseButton.GetComponentInChildren<TMP_Text>(true);
     }
 
-    private static Button FindLikelyPurchaseButton()
+    private static Button FindExplicitPurchaseButton()
     {
         Scene activeScene = SceneManager.GetActiveScene();
         Button[] allButtons = FindObjectsByType<Button>(FindObjectsSortMode.None);
@@ -163,34 +170,48 @@ public class StorePurchaseController : SeedPurchaseControllerBase
             if (!HasUsableRaycaster(button))
                 continue;
 
+            if (!button.isActiveAndEnabled || !button.gameObject.activeInHierarchy)
+                continue;
+
             string text = GetButtonText(button);
             if (IsLikelyLeaveButton(button))
                 continue;
 
-            if (text.Contains("buy") || text.Contains("purchase") || text.Contains("seed"))
-                return button;
-        }
-
-        // Safe fallback: only use buttons that have no persistent click handlers.
-        foreach (Button button in allButtons)
-        {
-            if (button == null)
-                continue;
-
-            if (!BelongsToScene(button.gameObject, activeScene))
-                continue;
-
-            if (!HasUsableRaycaster(button))
-                continue;
-
-            if (IsLikelyLeaveButton(button))
-                continue;
-
-            if (button.onClick.GetPersistentEventCount() == 0)
+            if (LooksLikePurchaseButton(button, text))
                 return button;
         }
 
         return null;
+    }
+
+    private static bool LooksLikePurchaseButton(Button button, string loweredText)
+    {
+        if (button == null)
+            return false;
+
+        string loweredName = string.IsNullOrWhiteSpace(button.name) ? string.Empty : button.name.ToLowerInvariant();
+        foreach (string hint in PurchaseButtonNameHints)
+        {
+            if (loweredName.Contains(hint) || loweredText.Contains(hint))
+                return true;
+        }
+
+        int persistentCount = button.onClick.GetPersistentEventCount();
+        for (int i = 0; i < persistentCount; i++)
+        {
+            string method = button.onClick.GetPersistentMethodName(i);
+            if (string.IsNullOrWhiteSpace(method))
+                continue;
+
+            string loweredMethod = method.ToLowerInvariant();
+            foreach (string hint in PurchaseButtonNameHints)
+            {
+                if (loweredMethod.Contains(hint))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static string GetButtonText(Button button)
