@@ -3,6 +3,21 @@ using UnityEngine;
 using Environment;
 using Core;
 
+/*
+* This class represents a single tile in the farm. It manages its own state (grass, tilled, watered, planted) and handles interactions 
+    such as tilling, watering, and planting seeds.
+* It also handles the visual representation of the tile based on its state and plays appropriate audio cues for interactions.
+* The tile can be highlighted when selected, and it tracks the number of days since the last interaction to determine if it should revert 
+    to a less cultivated state (e.g., watered -> tilled -> grass).
+* Exposes:
+*   - GetCondition: A property to get the current condition of the tile.
+*   - Interact(): A method to interact with the tile, which will perform an action based on its current state (till, water, plant).
+*   - OnDayPassed(): A method that should be called when a day passes in the game, which will update the tile's state based on how long it's been since the last interaction.
+* Requires:
+*   - A MeshRenderer component for visual representation.
+*   - AudioSource components for step, tilling, and watering sounds.
+*/
+
 namespace Farming 
 {
     public class FarmTile : MonoBehaviour
@@ -16,7 +31,7 @@ namespace Farming
         [SerializeField] private GameObject plantPrefab;
 
         // Runtime plant instance currently occupying this tile (if any).
-        private Plant currentPlant;
+private Plant currentPlant;
         [Header("Visuals")]
         [SerializeField] private Material grassMaterial;
         [SerializeField] private Material tilledMaterial;

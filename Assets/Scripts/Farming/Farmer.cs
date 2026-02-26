@@ -4,6 +4,25 @@ using Character;
 using TMPro;
 using UnityEngine.SceneManagement;
 
+ /*
+ * The Farmer class manages the player's farming-related actions, resources, and UI.
+ * It handles energy and water resources, tool visuals, and interactions with FarmTiles.
+ * It also provides feedback when actions are blocked due to insufficient resources.
+ * Exposes:
+ *   - SetTool(string tool): Sets the active tool visual based on the provided tool name.
+ *   - SetSprintInput(bool sprintPressed): Updates the sprint input state and manages sprinting based on energy levels.
+ *   - TryConsumeJumpEnergy(): Attempts to consume energy for jumping and returns true if successful, false if not enough energy.
+ *   - TryTileInteraction(FarmTile tile): Attempts to interact with the given FarmTile based on its condition, consuming resources as needed and providing feedback if resources are insufficient.
+ *   - RefillWaterToFull(): Refills the water resource to its maximum level.
+ * Requires:
+ *   - An AnimatedController component for triggering animations.
+ *   - A MovementController component for managing movement and sprinting.
+ *   - A FarmerResourceState singleton for managing resource state across the game.
+ *   - ProgressBar UI components for displaying energy and water levels (optional, will auto-bind if not assigned).
+ *   - GameObjects for tool visuals (watering can and garden hoe) to show/hide based on the active tool.
+ *   - A Canvas for displaying action feedback messages (optional, will search for an active canvas if not assigned).
+ */
+
 public class Farmer : MonoBehaviour
 {
     [Header("Tool Visuals")]
