@@ -1,17 +1,23 @@
 using UnityEngine;
 using System.Collections.Generic;
+
 public class Spawner : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Grid dimensions for spawned prefab instances.
     [SerializeField] int rows = 4;
     [SerializeField] int cols = 4;
-    [SerializeField]  GameObject prefab;
+    // Prefab cloned for each grid cell.
+    [SerializeField] GameObject prefab;
+    // Runtime list of spawned clones for cleanup/rebuild.
     List<GameObject> spawnedObjects = new List<GameObject>();
 
+    // Editor hook for rebuild behavior (currently disabled).
     void OnValidate()
     {
-       // BuildGrid();
+        // BuildGrid();
     }
+
+    // Spawns a simple grid of prefabs under this object.
     void BuildGrid()
     {
         foreach (GameObject obj in spawnedObjects)
@@ -22,9 +28,10 @@ public class Spawner : MonoBehaviour
             Destroy(obj);
             #endif
         }
+
         Vector3 spawnPos = transform.position;
         int count = 0;
-        GameObject clone = null; 
+        GameObject clone = null;
 
         for (int c = 0; c < cols; c++)
         {
@@ -36,18 +43,19 @@ public class Spawner : MonoBehaviour
                 spawnPos.x += 1.0f;
                 count++;
             }
+
             spawnPos.x = transform.position.x;
             spawnPos.z += 1.0f;
         }
     }
+
+    // Reserved startup hook.
     void Start()
     {
-       
     }
 
-    // Update is called once per frame
+    // Reserved frame update hook.
     void Update()
     {
-        
     }
 }

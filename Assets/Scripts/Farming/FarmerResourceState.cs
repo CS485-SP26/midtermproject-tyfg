@@ -1,6 +1,29 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/*
+* This class manages the player's energy and water resources, including their current values, maximum values, and regeneration over time.
+* It also handles updating the UI progress bars that display the current energy and water levels.
+* The class is implemented as a singleton to allow easy access from other scripts, and it persists across scene loads to maintain resource state throughout the game.
+* Exposes:
+*   - CurrentEnergy (float): The current energy level of the player.
+*   - CurrentWater (float): The current water level of the player.
+*   - MaxEnergy (float): The maximum energy level of the player.
+*   - MaxWater (float): The maximum water level of the player.
+*   - SetEnergy(float value): Sets the current energy level to the specified value, clamped between 0 and MaxEnergy.
+*   - SetWater(float value): Sets the current water level to the specified value, clamped between 0 and MaxWater.
+*   - Configure(float maxEnergyValue, float maxWaterValue, float regenPerSecond, string energyBarName, string waterBarName): 
+        Configures the maximum values, regeneration rate, and UI bar names for energy and water.
+*   - InitializeIfNeeded(float startingEnergy, float startingWater): Initializes the current energy and water levels if they haven't been 
+        initialized yet, using the provided starting values.
+*   - SetFarmerPresent(bool present): Sets whether the farmer is currently present, which affects whether energy regeneration occurs.
+* Requires:
+*   - ProgressBar components in the scene with names matching energyBarObjectName and waterBarObjectName, or with names containing 
+        "energy" and "water" respectively, for the UI to display the resource levels.
+*   - The class must be accessed through the Instance property to ensure the singleton pattern is maintained and the instance is 
+        properly initialized. Directly adding this script to a GameObject in the scene is not recommended, as it will be automatically created and managed by the class itself.
+*/
+
 public class FarmerResourceState : MonoBehaviour
 {
     private static FarmerResourceState instance;
@@ -34,18 +57,21 @@ public class FarmerResourceState : MonoBehaviour
     public float MaxEnergy => maxEnergy;
     public float MaxWater => maxWater;
 
+    // Clears static singleton references on play-mode/runtime subsystem reset.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         instance = null;
     }
 
+    // Ensures singleton instance exists after scene load.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
         EnsureInstance();
     }
 
+    // Creates singleton GameObject when no instance exists yet.
     private static void EnsureInstance()
     {
         if (instance != null)
@@ -56,6 +82,7 @@ public class FarmerResourceState : MonoBehaviour
         DontDestroyOnLoad(go);
     }
 
+    // Enforces singleton and subscribes to scene-load rebinding.
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -69,12 +96,14 @@ public class FarmerResourceState : MonoBehaviour
         SceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
+    // Removes scene-load subscription on destroy.
     private void OnDestroy()
     {
         if (instance == this)
             SceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
+    // Regenerates energy while no farmer is active in the scene.
     private void Update()
     {
         if (!initialized)
@@ -87,6 +116,7 @@ public class FarmerResourceState : MonoBehaviour
         }
     }
 
+    // Applies configuration values used for clamping/regen/bar lookup.
     public void Configure(float maxEnergyValue, float maxWaterValue, float regenPerSecond, string energyBarName, string waterBarName)
     {
         maxEnergy = Mathf.Max(1f, maxEnergyValue);
@@ -107,6 +137,7 @@ public class FarmerResourceState : MonoBehaviour
         }
     }
 
+    // Initializes persisted values exactly once for a new play session.
     public void InitializeIfNeeded(float startingEnergy, float startingWater)
     {
         if (initialized)
@@ -118,11 +149,13 @@ public class FarmerResourceState : MonoBehaviour
         ApplyValuesToBars();
     }
 
+    // Tracks whether an active Farmer is currently controlling resources directly.
     public void SetFarmerPresent(bool present)
     {
         farmerPresent = present;
     }
 
+    // Writes current energy value and refreshes UI bars.
     public void SetEnergy(float value)
     {
         initialized = true;
@@ -130,6 +163,7 @@ public class FarmerResourceState : MonoBehaviour
         ApplyValuesToBars();
     }
 
+    // Writes current water value and refreshes UI bars.
     public void SetWater(float value)
     {
         initialized = true;
@@ -137,6 +171,7 @@ public class FarmerResourceState : MonoBehaviour
         ApplyValuesToBars();
     }
 
+    // Clears cached bars on scene load then reapplies latest values.
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         energyBar = null;
@@ -144,6 +179,7 @@ public class FarmerResourceState : MonoBehaviour
         ApplyValuesToBars();
     }
 
+    // Pushes normalized energy/water values to resolved progress bars.
     private void ApplyValuesToBars()
     {
         if (!initialized)
@@ -158,6 +194,7 @@ public class FarmerResourceState : MonoBehaviour
             waterBar.Fill = maxWater <= 0f ? 0f : currentWater / maxWater;
     }
 
+    // Resolves missing bar references from current scene objects.
     private void ResolveBars()
     {
         if (energyBar != null && waterBar != null)
@@ -195,6 +232,7 @@ public class FarmerResourceState : MonoBehaviour
         }
     }
 
+    // Finds a progress bar by exact name.
     private static ProgressBar FindProgressBarByName(string objectName, ProgressBar[] bars)
     {
         if (string.IsNullOrWhiteSpace(objectName) || bars == null || bars.Length == 0)
@@ -209,6 +247,7 @@ public class FarmerResourceState : MonoBehaviour
         return null;
     }
 
+    // Finds a progress bar by partial-name token.
     private static ProgressBar FindProgressBarByPartialName(string token, ProgressBar[] bars)
     {
         if (string.IsNullOrWhiteSpace(token) || bars == null || bars.Length == 0)

@@ -20,6 +20,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
     [SerializeField] private bool autoCreatePurchaseButton = true;
     private bool purchaseButtonWasAutoCreated;
 
+    // Registers scene callbacks and ensures controller exists in store scenes.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void RegisterSceneBootstrap()
     {
@@ -28,11 +29,13 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         EnsureControllerInScene(SceneManager.GetActiveScene());
     }
 
+    // Static scene callback that validates controller presence by scene.
     private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         EnsureControllerInScene(scene);
     }
 
+    // Creates/removes runtime controller depending on whether scene is a store scene.
     private static void EnsureControllerInScene(Scene scene)
     {
         if (!IsStoreScene(scene))
@@ -49,6 +52,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         go.AddComponent<StorePurchaseController>();
     }
 
+    // Initializes economy subscriptions and binds/creates purchase UI.
     private void Start()
     {
         economyService = GameManager.Instance;
@@ -69,6 +73,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         UpdatePurchaseAvailability(GetFundsBalance());
     }
 
+    // Late fallback to auto-bind purchase UI if it appears after Start.
     private void Update()
     {
         if (!IsStoreScene(SceneManager.GetActiveScene()))
@@ -87,6 +92,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         UpdatePurchaseAvailability(GetFundsBalance());
     }
 
+    // Cleans subscriptions/listeners when object is destroyed.
     private void OnDestroy()
     {
         if (economyService == null)
@@ -98,12 +104,14 @@ public class StorePurchaseController : SeedPurchaseControllerBase
             purchaseButton.onClick.RemoveListener(PurchaseSeeds);
     }
 
+    // Public click handler for buying seeds.
     public void PurchaseSeeds()
     {
         TryPurchaseAndNotify();
         UpdatePurchaseAvailability(GetFundsBalance());
     }
 
+    // Economy event callback used to refresh button availability on funds changes.
     private void HandleResourceChanged(EconomyResource resource, int amount)
     {
         if (resource != EconomyResource.Funds)
@@ -112,12 +120,14 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         UpdatePurchaseAvailability(amount);
     }
 
+    // Updates purchase button interactable state.
     private void UpdatePurchaseAvailability(int funds)
     {
         if (purchaseButton != null)
             purchaseButton.interactable = true;
     }
 
+    // Resolves existing purchase button or creates one if allowed.
     private void TryAutoBindUI()
     {
         if (purchaseButton != null && !IsUsableStoreButton(purchaseButton))
@@ -155,6 +165,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
             purchaseButtonText = purchaseButton.GetComponentInChildren<TMP_Text>(true);
     }
 
+    // Finds best existing purchase button candidate in active scene.
     private static Button FindExplicitPurchaseButton()
     {
         Scene activeScene = SceneManager.GetActiveScene();
@@ -184,6 +195,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return null;
     }
 
+    // Heuristic: determines if button likely represents purchase action.
     private static bool LooksLikePurchaseButton(Button button, string loweredText)
     {
         if (button == null)
@@ -214,6 +226,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return false;
     }
 
+    // Extracts lowercase button text from TMP/Text/name for matching.
     private static string GetButtonText(Button button)
     {
         if (button == null)
@@ -230,6 +243,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return button.name.ToLowerInvariant();
     }
 
+    // Creates a default styled purchase button when scene lacks one.
     private Button CreatePurchaseButton()
     {
         Canvas canvas = ResolveCanvas();
@@ -254,6 +268,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return button;
     }
 
+    // Returns true if a button is valid for active store scene interaction.
     private static bool IsUsableStoreButton(Button button)
     {
         if (button == null || button.gameObject == null)
@@ -266,6 +281,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return HasUsableRaycaster(button);
     }
 
+    // Checks whether GameObject belongs to specific scene instance.
     private static bool BelongsToScene(GameObject gameObject, Scene scene)
     {
         if (gameObject == null || !scene.IsValid())
@@ -274,6 +290,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return gameObject.scene.IsValid() && gameObject.scene.handle == scene.handle;
     }
 
+    // Validates that button has an active parent canvas with GraphicRaycaster.
     private static bool HasUsableRaycaster(Button button)
     {
         if (button == null)
@@ -287,6 +304,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return raycaster != null && raycaster.isActiveAndEnabled;
     }
 
+    // Creates button label and copies text style from reference button when possible.
     private static TMP_Text CreateButtonLabel(Transform parent, Button styleSource)
     {
         if (parent == null)
@@ -323,6 +341,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return label;
     }
 
+    // Copies transition/graphic style from reference button to generated button.
     private static void ApplyStyleFromReferenceButton(Button targetButton, Image targetImage)
     {
         if (targetButton == null || targetImage == null)
@@ -365,6 +384,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         targetButton.targetGraphic = targetImage;
     }
 
+    // Finds a button to use as style reference (prefer leave button).
     private static Button FindStyleReferenceButton()
     {
         Button leaveButton = FindLeaveButton();
@@ -381,6 +401,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return null;
     }
 
+    // Heuristic to detect leave/back/exit scene buttons.
     private static bool IsLikelyLeaveButton(Button button)
     {
         if (button == null)
@@ -408,6 +429,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return false;
     }
 
+    // Returns first button that looks like a leave/back control.
     private static Button FindLeaveButton()
     {
         Button[] buttons = FindObjectsByType<Button>(FindObjectsSortMode.None);
@@ -420,6 +442,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return null;
     }
 
+    // Resolves usable scene canvas with raycaster for generated button placement.
     private static Canvas ResolveCanvas()
     {
         Scene activeScene = SceneManager.GetActiveScene();
@@ -458,6 +481,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return null;
     }
 
+    // Determines if a scene is considered a store scene by name.
     private static bool IsStoreScene(Scene scene)
     {
         if (!scene.IsValid())
@@ -473,6 +497,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         return sceneName.IndexOf("store", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
+    // Destroys auto-created purchase button outside store context.
     private void CleanupAutoCreatedButton()
     {
         if (purchaseButton == null)
@@ -489,6 +514,7 @@ public class StorePurchaseController : SeedPurchaseControllerBase
         purchaseButtonWasAutoCreated = false;
     }
 
+    // Removes leaked auto-created purchase buttons from non-store scenes.
     private static void CleanupAutoCreatedButtonsInNonStoreScene()
     {
         Button[] buttons = FindObjectsByType<Button>(FindObjectsSortMode.None);

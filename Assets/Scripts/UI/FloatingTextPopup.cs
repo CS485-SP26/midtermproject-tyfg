@@ -2,13 +2,16 @@ using UnityEngine;
 
 public class FloatingTextPopup : MonoBehaviour
 {
+    // Cached UI components for movement/fade animation.
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
+    // Animation parameters.
     private float durationSeconds = 0.8f;
     private float risePixels = 40f;
     private float elapsedSeconds = 0f;
     private Vector2 startAnchoredPosition;
 
+    // Caches required components and starting position.
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -20,6 +23,7 @@ public class FloatingTextPopup : MonoBehaviour
             startAnchoredPosition = rectTransform.anchoredPosition;
     }
 
+    // Applies runtime popup animation settings and resets animation progress.
     public void Configure(float duration, float rise)
     {
         durationSeconds = Mathf.Max(0.05f, duration);
@@ -38,6 +42,7 @@ public class FloatingTextPopup : MonoBehaviour
             canvasGroup.alpha = 1f;
     }
 
+    // Animates upward movement + fade-out, then destroys popup at completion.
     private void Update()
     {
         elapsedSeconds += Time.deltaTime;

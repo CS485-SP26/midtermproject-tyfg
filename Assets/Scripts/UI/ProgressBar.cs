@@ -9,24 +9,28 @@ public class ProgressBar : MonoBehaviour
     [SerializeField] private Image fillImage;
     [SerializeField] private TextMeshProUGUI fillText;
 
+    // Ensures required child visuals exist at runtime load.
     private void Awake()
     {
         EnsureVisualStructure();
         ApplyLockedStyle();
     }
 
+    // Rebuilds bar visuals when component is reset from inspector.
     private void Reset()
     {
         EnsureVisualStructure();
         ApplyLockedStyle();
     }
 
+    // Keeps generated visuals synchronized while editing in inspector.
     private void OnValidate()
     {
         EnsureVisualStructure();
         ApplyLockedStyle();
     }
 
+    // Sets normalized fill amount [0..1] and hides fill when effectively empty.
     public float Fill
     {
         set
@@ -41,6 +45,7 @@ public class ProgressBar : MonoBehaviour
         }
     }
 
+    // Sets center label text.
     public void SetText(string text)
     {
         EnsureVisualStructure();
@@ -48,6 +53,7 @@ public class ProgressBar : MonoBehaviour
             fillText.text = text;
     }
 
+    // Sets fill image color tint.
     public void SetFillColor(Color color)
     {
         EnsureVisualStructure();
@@ -55,6 +61,7 @@ public class ProgressBar : MonoBehaviour
             fillImage.color = color;
     }
 
+    // Auto-binds/creates missing bar pieces to guarantee complete visual structure.
     private void EnsureVisualStructure()
     {
         // First pass: bind anything already present in the hierarchy.
@@ -76,6 +83,7 @@ public class ProgressBar : MonoBehaviour
         AutoBindExistingChildren();
     }
 
+    // Attempts to bind background/fill/label from existing children.
     private void AutoBindExistingChildren()
     {
         if (backgroundImage == null)
@@ -94,6 +102,7 @@ public class ProgressBar : MonoBehaviour
             fillText = GetComponentInChildren<TextMeshProUGUI>(true);
     }
 
+    // Applies a fixed style/layout setup expected by project UI bars.
     private void ApplyLockedStyle()
     {
         if (backgroundImage != null)
@@ -125,6 +134,7 @@ public class ProgressBar : MonoBehaviour
             fillText.raycastTarget = false;
     }
 
+    // Finds child Image by exact object name.
     private Image FindImageByName(string targetName)
     {
         if (string.IsNullOrWhiteSpace(targetName))
@@ -140,6 +150,7 @@ public class ProgressBar : MonoBehaviour
         return null;
     }
 
+    // Finds first Image already configured as filled type.
     private Image FindFilledImageFallback()
     {
         Image[] images = GetComponentsInChildren<Image>(true);
@@ -152,6 +163,7 @@ public class ProgressBar : MonoBehaviour
         return null;
     }
 
+    // Copies RectTransform layout values from source to target.
     private static void CopyRectTransform(RectTransform source, RectTransform target)
     {
         if (source == null || target == null)
@@ -166,6 +178,7 @@ public class ProgressBar : MonoBehaviour
         target.localScale = source.localScale;
     }
 
+    // Creates missing background image based on existing fill image.
     private Image CreateBackgroundFromFill(Image fill)
     {
         if (fill == null)
@@ -200,6 +213,7 @@ public class ProgressBar : MonoBehaviour
         return image;
     }
 
+    // Creates missing fill image based on existing background image.
     private Image CreateFillFromBackground(Image background)
     {
         if (background == null)
@@ -223,6 +237,7 @@ public class ProgressBar : MonoBehaviour
         return image;
     }
 
+    // Returns Unity built-in sprite used when no sprite is explicitly set.
     private static Sprite GetDefaultUISprite()
     {
         Sprite sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
@@ -232,6 +247,7 @@ public class ProgressBar : MonoBehaviour
         return sprite;
     }
 
+    // Finds child TMP label by exact object name.
     private TextMeshProUGUI FindTextByName(string targetName)
     {
         if (string.IsNullOrWhiteSpace(targetName))
@@ -247,6 +263,7 @@ public class ProgressBar : MonoBehaviour
         return null;
     }
 
+    // Creates default centered label object for the progress bar.
     private TextMeshProUGUI CreateCenteredLabel()
     {
         Transform parent = backgroundImage != null ? backgroundImage.transform : transform;

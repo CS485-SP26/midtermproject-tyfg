@@ -3,15 +3,22 @@ using Farming;
 
 
 /*
-* This class doesn't select the tile it manages the tile that is selected 
+* This class does not select tiles by itself; it stores/manages the currently selected tile.
 */
 namespace Character 
 {
     public abstract class TileSelector : MonoBehaviour
     {
-        [SerializeField] protected FarmTile activeTile; // good for debugging
-        public FarmTile GetSelectedTile() { return activeTile; }
+        // Active tile reference (serialized mainly for runtime debugging).
+        [SerializeField] protected FarmTile activeTile;
 
+        // Returns the current selected tile.
+        public FarmTile GetSelectedTile()
+        {
+            return activeTile;
+        }
+
+        // Updates selected tile and handles highlight transition between old/new tile.
         protected void SetActiveTile(FarmTile tile)
         {
             if (activeTile != tile)

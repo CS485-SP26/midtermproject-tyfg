@@ -26,6 +26,7 @@ public static class SceneUIBootstrap
     private static bool startupSceneValidated;
     private static GameObject persistentHudRoot;
 
+    // Resets static bootstrap state when runtime subsystem resets.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
@@ -33,6 +34,7 @@ public static class SceneUIBootstrap
         persistentHudRoot = null;
     }
 
+    // Registers scene callbacks and applies initial scene UI fixes.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Initialize()
     {
@@ -49,11 +51,13 @@ public static class SceneUIBootstrap
         ApplySceneFixes(activeScene);
     }
 
+    // Scene-load callback entry point for applying scene UI fixes.
     private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         ApplySceneFixes(scene);
     }
 
+    // Applies all runtime UI repair/bootstrap steps for a scene.
     private static void ApplySceneFixes(Scene scene)
     {
         EnsureValidUIInputActions();
@@ -70,6 +74,7 @@ public static class SceneUIBootstrap
             EnsureStorePurchaseController();
     }
 
+    // Returns true once if startup should redirect to intro scene.
     private static bool ShouldRedirectToIntroScene(Scene activeScene)
     {
         if (startupSceneValidated)
@@ -85,6 +90,7 @@ public static class SceneUIBootstrap
         return !string.Equals(activeScene.name, IntroSceneName, StringComparison.Ordinal);
     }
 
+    // Maintains a cross-scene persistent gameplay HUD outside intro scene.
     private static void EnsurePersistentGameplayHud(Scene scene)
     {
         if (scene.name == IntroSceneName)
@@ -102,6 +108,7 @@ public static class SceneUIBootstrap
         SetPersistentHudVisible(true);
     }
 
+    // Creates persistent HUD canvas root if missing.
     private static void EnsurePersistentHudRoot()
     {
         if (persistentHudRoot != null)
@@ -123,6 +130,7 @@ public static class SceneUIBootstrap
         persistentHudRoot = root;
     }
 
+    // Moves scene HUD objects into persistent HUD root when needed.
     private static void PromoteHudObjectsFromScene(Scene scene)
     {
         if (persistentHudRoot == null || !scene.IsValid())
@@ -158,6 +166,7 @@ public static class SceneUIBootstrap
         }
     }
 
+    // Finds scene-local TMP text by exact name.
     private static TMP_Text FindSceneHudTextByName(Scene scene, string textName)
     {
         if (!scene.IsValid() || string.IsNullOrWhiteSpace(textName))
@@ -180,6 +189,7 @@ public static class SceneUIBootstrap
         return null;
     }
 
+    // Reparents a HUD object into persistent HUD root.
     private static void PromoteHudObject(GameObject hudObject)
     {
         if (hudObject == null || persistentHudRoot == null)
@@ -195,6 +205,7 @@ public static class SceneUIBootstrap
         hudObject.transform.SetParent(persistentHudRoot.transform, false);
     }
 
+    // Returns true if persistent HUD already contains a text object by name.
     private static bool PersistentHudHasTextNamed(string textName)
     {
         if (persistentHudRoot == null || string.IsNullOrWhiteSpace(textName))
@@ -210,6 +221,7 @@ public static class SceneUIBootstrap
         return false;
     }
 
+    // Removes duplicate HUD objects remaining in scene after promotion.
     private static void CleanupDuplicateHudObjectsInScene(Scene scene)
     {
         if (persistentHudRoot == null || !scene.IsValid())
@@ -259,6 +271,7 @@ public static class SceneUIBootstrap
         }
     }
 
+    // Toggles persistent HUD root visibility.
     private static void SetPersistentHudVisible(bool visible)
     {
         if (persistentHudRoot == null)
@@ -268,6 +281,7 @@ public static class SceneUIBootstrap
             persistentHudRoot.SetActive(visible);
     }
 
+    // Fixes missing/broken UI action references on InputSystem UI modules.
     private static void EnsureValidUIInputActions()
     {
         EventSystem[] eventSystems = Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None);
@@ -285,6 +299,7 @@ public static class SceneUIBootstrap
         }
     }
 
+    // Ensures intro start button loads farm scene.
     private static void RebindIntroStartButton()
     {
         Button[] buttons = Object.FindObjectsByType<Button>(FindObjectsSortMode.None);
@@ -302,6 +317,7 @@ public static class SceneUIBootstrap
         }
     }
 
+    // Builds/fixes intro overlay title/button UI elements.
     private static void EnsureIntroOverlay()
     {
         Canvas canvas = ResolveCanvas();
@@ -323,6 +339,7 @@ public static class SceneUIBootstrap
         EnsureStartButtonLabel(startButton);
     }
 
+    // Heuristic to identify "start" buttons by name/text.
     private static bool IsLikelyStartButton(Button button)
     {
         if (button == null)
@@ -343,6 +360,7 @@ public static class SceneUIBootstrap
         return false;
     }
 
+    // Locates intro title label if already present.
     private static TMP_Text FindIntroTitle()
     {
         TMP_Text[] labels = Object.FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
@@ -360,6 +378,7 @@ public static class SceneUIBootstrap
         return null;
     }
 
+    // Locates intro start button if already present.
     private static Button FindIntroStartButton()
     {
         Button[] buttons = Object.FindObjectsByType<Button>(FindObjectsSortMode.None);
@@ -375,6 +394,7 @@ public static class SceneUIBootstrap
         return null;
     }
 
+    // Creates default intro title TMP label.
     private static TMP_Text CreateIntroTitle(Transform parent)
     {
         if (parent == null)
@@ -401,6 +421,7 @@ public static class SceneUIBootstrap
         return titleText;
     }
 
+    // Creates default intro start button.
     private static Button CreateIntroStartButton(Transform parent)
     {
         if (parent == null)
@@ -423,6 +444,7 @@ public static class SceneUIBootstrap
         return buttonGo.GetComponent<Button>();
     }
 
+    // Ensures start button has the expected text label.
     private static void EnsureStartButtonLabel(Button startButton)
     {
         if (startButton == null)
@@ -453,11 +475,13 @@ public static class SceneUIBootstrap
         label.text = IntroStartText;
     }
 
+    // Loads the farm gameplay scene.
     private static void LoadFarmScene()
     {
         SceneManager.LoadScene(FarmSceneName);
     }
 
+    // Ensures store purchase controller exists in store scene.
     private static void EnsureStorePurchaseController()
     {
         StorePurchaseController[] controllers = Object.FindObjectsByType<StorePurchaseController>(FindObjectsSortMode.None);
@@ -468,6 +492,7 @@ public static class SceneUIBootstrap
         go.AddComponent<StorePurchaseController>();
     }
 
+    // Removes UI elements that only belong to specific scenes.
     private static void CleanupSceneSpecificUI(Scene scene)
     {
         if (scene.name != IntroSceneName)
@@ -477,6 +502,7 @@ public static class SceneUIBootstrap
             CleanupStoreOnlyUI();
     }
 
+    // Removes intro-only title/start elements outside intro scene.
     private static void CleanupIntroOnlyUI()
     {
         TMP_Text[] labels = Object.FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
@@ -508,6 +534,7 @@ public static class SceneUIBootstrap
         }
     }
 
+    // Removes store-only purchase/leave elements outside store scene.
     private static void CleanupStoreOnlyUI()
     {
         StorePurchaseController[] controllers = Object.FindObjectsByType<StorePurchaseController>(FindObjectsSortMode.None);
@@ -536,6 +563,7 @@ public static class SceneUIBootstrap
         }
     }
 
+    // Checks if a button has a persistent OnClick method with given name.
     private static bool HasPersistentMethod(Button button, string methodName)
     {
         if (button == null || string.IsNullOrWhiteSpace(methodName))
@@ -552,6 +580,7 @@ public static class SceneUIBootstrap
         return false;
     }
 
+    // Gets normalized button text from TMP, legacy Text, or object name.
     private static string GetButtonText(Button button)
     {
         if (button == null)
@@ -568,6 +597,7 @@ public static class SceneUIBootstrap
         return string.IsNullOrWhiteSpace(button.name) ? string.Empty : button.name.ToLowerInvariant();
     }
 
+    // Returns an active canvas, creating one if none exists.
     private static Canvas ResolveCanvas()
     {
         Canvas[] canvases = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
@@ -590,6 +620,7 @@ public static class SceneUIBootstrap
         return created;
     }
 
+    // Ensures an active EventSystem with InputSystem module exists.
     private static void EnsureEventSystemExists()
     {
         EventSystem[] eventSystems = Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None);

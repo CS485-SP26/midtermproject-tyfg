@@ -21,10 +21,14 @@ namespace Character
      */
     public class AnimatedController : MonoBehaviour
     {
-        [SerializeField] float moveSpeed; // for debugging
+        // Cached speed value sent to animator (also visible in inspector for debugging).
+        [SerializeField] float moveSpeed;
+        // Movement source used to read runtime locomotion state.
         MovementController moveController;
+        // Animator that receives parameter/trigger updates.
         [SerializeField] Animator animator;
 
+        // Caches required components and validates dependencies.
         void Start()
         {
             moveController = GetComponent<MovementController>();
@@ -36,16 +40,19 @@ namespace Character
         // -------------------------
         // Trigger Helpers
         // -------------------------
+        // Generic trigger helper for any animator trigger parameter.
         public void SetTrigger(string name)
         {
             animator.SetTrigger(name);
         }
 
+        // Fires the jump trigger on the animator.
         public void TriggerJump()
-        {   
+        {
             animator.SetTrigger("Jump");
         }
 
+        // Fires the slide trigger on the animator.
         public void TriggerSlide()
         {
             animator.SetTrigger("DoSlide");
@@ -54,19 +61,19 @@ namespace Character
         // -------------------------
         // Animation Updates
         // -------------------------
+        // Pushes current movement/grounding state to animator parameters each frame.
         void Update()
         {
-            // Midterm-required speed parameter
+            // Midterm-required speed parameter.
             moveSpeed = moveController.GetHorizontalSpeedPercent();
             animator.SetFloat("moveSpeed", moveSpeed);
 
-            // Advanced animation parameters from your previous project
+            // Advanced animation parameters from previous project logic.
             animator.SetBool("IsGrounded", moveController.IsGroundedState());
             animator.SetFloat("VerticalVelocity", moveController.VerticalVelocity);
             animator.SetBool("NearGround", moveController.NearGround());
             animator.SetBool("IsCrouching", moveController.IsCrouchingState());
             animator.SetBool("CanJump", moveController.CanJump());
-
         }
     }
 }

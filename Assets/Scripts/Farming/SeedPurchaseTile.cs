@@ -6,9 +6,11 @@ namespace Farming
     [RequireComponent(typeof(FarmTile))]
     public class SeedPurchaseTile : SeedPurchaseControllerBase
     {
+        // Minimum time between interaction-triggered purchases.
         [SerializeField] private float interactionCooldownSeconds = 0.2f;
         private float nextInteractionTime = 0f;
 
+        // Clamps cooldown to a sensible minimum.
         protected override void OnValidate()
         {
             base.OnValidate();
@@ -17,6 +19,7 @@ namespace Farming
                 interactionCooldownSeconds = 0.05f;
         }
 
+        // Attempts purchase from a farmer interaction while respecting cooldown.
         public bool TryPurchaseFromFarmer(Farmer farmer)
         {
             if (farmer == null || Time.time < nextInteractionTime)

@@ -36,6 +36,7 @@ public class CurrencyTextUI : MonoBehaviour
     private int lastRenderedSeeds = int.MinValue;
     private bool fundsTextWasAutoCreated;
 
+    // Registers scene callbacks and ensures one CurrencyTextUI exists per active scene.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void RegisterSceneBootstrap()
     {
@@ -44,11 +45,13 @@ public class CurrencyTextUI : MonoBehaviour
         EnsureInstanceInActiveScene();
     }
 
+    // Static scene callback that keeps UI component bootstrapped.
     private static void HandleStaticSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         EnsureInstanceInActiveScene();
     }
 
+    // Creates a runtime CurrencyTextUI object when none is present.
     private static void EnsureInstanceInActiveScene()
     {
         if (FindObjectsByType<CurrencyTextUI>(FindObjectsSortMode.None).Length > 0)
@@ -58,6 +61,7 @@ public class CurrencyTextUI : MonoBehaviour
         go.AddComponent<CurrencyTextUI>();
     }
 
+    // Enforces singleton-style component behavior for this scene helper.
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -70,21 +74,25 @@ public class CurrencyTextUI : MonoBehaviour
         instance = this;
     }
 
+    // Subscribes to scene load events when component becomes active.
     private void OnEnable()
     {
         SceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
+    // Performs first scene-based binding/update pass.
     private void Start()
     {
         RefreshForCurrentScene();
     }
 
+    // Unsubscribes scene callback when component is disabled.
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
+    // Cleans singleton and GameManager event subscriptions.
     private void OnDestroy()
     {
         if (instance == this)
@@ -97,6 +105,7 @@ public class CurrencyTextUI : MonoBehaviour
         gameManager.SeedsChanged -= HandleSeedsChanged;
     }
 
+    // Rebinds HUD references and values after each scene load.
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (IsIntroScene(scene))
@@ -111,6 +120,7 @@ public class CurrencyTextUI : MonoBehaviour
         RefreshAll();
     }
 
+    // Keeps labels synced in case values/references change during runtime.
     private void Update()
     {
         Scene activeScene = SceneManager.GetActiveScene();
@@ -135,16 +145,19 @@ public class CurrencyTextUI : MonoBehaviour
             UpdateSeedsText(gameManager.Seeds);
     }
 
+    // GameManager funds event handler.
     private void HandleFundsChanged(int funds)
     {
         UpdateFundsText(funds);
     }
 
+    // GameManager seeds event handler.
     private void HandleSeedsChanged(int seeds)
     {
         UpdateSeedsText(seeds);
     }
 
+    // Refreshes both funds and seeds labels from current GameManager values.
     private void RefreshAll()
     {
         if (gameManager == null)
@@ -154,6 +167,7 @@ public class CurrencyTextUI : MonoBehaviour
         UpdateSeedsText(gameManager.Seeds);
     }
 
+    // Updates funds label text and cached last-rendered value.
     private void UpdateFundsText(int funds)
     {
         if (fundsText == null)
@@ -165,9 +179,7 @@ public class CurrencyTextUI : MonoBehaviour
         lastRenderedFunds = funds;
     }
 
-    /*
-    * This feels like it should be refactored.
-    */
+    // Updates seeds label text and cached last-rendered value.
     private void UpdateSeedsText(int seeds)
     {
         if (seedsText == null)
@@ -179,6 +191,7 @@ public class CurrencyTextUI : MonoBehaviour
         lastRenderedSeeds = seeds;
     }
 
+    // Binds/creates HUD text targets for funds and seeds labels.
     private void AutoBindTextTargets()
     {
         if (IsIntroScene(SceneManager.GetActiveScene()))
@@ -211,6 +224,7 @@ public class CurrencyTextUI : MonoBehaviour
         AlignSeedsTextBelowFunds();
     }
 
+    // Creates a seeds text label under funds text using matching style.
     private TMP_Text CreateSeedsTextBelowFunds()
     {
         if (fundsText == null || string.IsNullOrWhiteSpace(seedsObjectName))
@@ -254,6 +268,7 @@ public class CurrencyTextUI : MonoBehaviour
         return seedsLabelText;
     }
 
+    // Creates fallback funds label when no scene label exists.
     private TMP_Text CreateFundsTextFallback()
     {
         if (string.IsNullOrWhiteSpace(fundsObjectName))
@@ -285,6 +300,7 @@ public class CurrencyTextUI : MonoBehaviour
         return fundsLabelText;
     }
 
+    // Resolves any active canvas for auto-created HUD labels.
     private static Canvas ResolveCanvas()
     {
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
@@ -297,6 +313,7 @@ public class CurrencyTextUI : MonoBehaviour
         return null;
     }
 
+    // Removes stale auto-generated funds labels from previous scene states.
     private void CleanupLegacyAutoFundsTexts()
     {
         string autoName = string.IsNullOrWhiteSpace(fundsObjectName) ? "FundAmount_Auto" : $"{fundsObjectName}_Auto";
@@ -311,6 +328,7 @@ public class CurrencyTextUI : MonoBehaviour
         }
     }
 
+    // Aligns seeds label under funds label and copies visual style.
     private void AlignSeedsTextBelowFunds()
     {
         TextMeshProUGUI fundsLabel = fundsText as TextMeshProUGUI;
@@ -343,6 +361,7 @@ public class CurrencyTextUI : MonoBehaviour
         seedsLabel.raycastTarget = fundsLabel.raycastTarget;
     }
 
+    // Finds TMP text by exact object name.
     private static TMP_Text FindTextByName(string targetName)
     {
         if (string.IsNullOrWhiteSpace(targetName))
@@ -358,6 +377,7 @@ public class CurrencyTextUI : MonoBehaviour
         return null;
     }
 
+    // Finds first text element that appears to be a funds label.
     private static TMP_Text FindFundsLikeText()
     {
         TMP_Text[] allTexts = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
@@ -376,6 +396,7 @@ public class CurrencyTextUI : MonoBehaviour
         return null;
     }
 
+    // Resolves GameManager and manages Funds/Seeds event subscriptions.
     private void BindGameManager()
     {
         GameManager resolved = FindObjectsByType<GameManager>(FindObjectsSortMode.None).FirstOrDefault();
@@ -400,6 +421,7 @@ public class CurrencyTextUI : MonoBehaviour
         }
     }
 
+    // Executes full scene-aware HUD refresh pass.
     private void RefreshForCurrentScene()
     {
         Scene activeScene = SceneManager.GetActiveScene();
@@ -416,11 +438,13 @@ public class CurrencyTextUI : MonoBehaviour
         RefreshAll();
     }
 
+    // Returns true when the given scene is the intro scene.
     private static bool IsIntroScene(Scene scene)
     {
         return scene.IsValid() && string.Equals(scene.name, IntroSceneName, System.StringComparison.Ordinal);
     }
 
+    // Hides gameplay HUD labels while intro scene is active.
     private void HideHudForIntroScene()
     {
         CleanupLegacyAutoFundsTexts();
@@ -428,12 +452,14 @@ public class CurrencyTextUI : MonoBehaviour
         SetHudLabelActive(seedsText, false);
     }
 
+    // Ensures gameplay HUD labels are visible.
     private void EnsureHudVisible()
     {
         SetHudLabelActive(fundsText, true);
         SetHudLabelActive(seedsText, true);
     }
 
+    // Safely toggles label GameObject active state.
     private static void SetHudLabelActive(TMP_Text label, bool active)
     {
         if (label == null || label.gameObject == null)
@@ -443,6 +469,7 @@ public class CurrencyTextUI : MonoBehaviour
             label.gameObject.SetActive(active);
     }
 
+    // Applies a unified style preset across funds/seeds labels.
     private void ApplyUnifiedHudStyle()
     {
         if (!enforceUnifiedHudStyle)
@@ -460,6 +487,7 @@ public class CurrencyTextUI : MonoBehaviour
         }
     }
 
+    // Applies shared style values and anchored layout to a TMP label.
     private void ApplyUnifiedTextStyle(TextMeshProUGUI label, Vector2 anchoredPosition)
     {
         if (label == null)

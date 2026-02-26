@@ -15,7 +15,8 @@ namespace Farming
         [SerializeField] private Transform plantSpawnPoint;
         [SerializeField] private GameObject plantPrefab;
 
-private Plant currentPlant;
+        // Runtime plant instance currently occupying this tile (if any).
+        private Plant currentPlant;
         [Header("Visuals")]
         [SerializeField] private Material grassMaterial;
         [SerializeField] private Material tilledMaterial;
@@ -32,6 +33,7 @@ private Plant currentPlant;
         private int daysSinceLastInteraction = 0;
         public FarmTile.Condition GetCondition { get { return tileCondition; } } // TODO: Consider what the set would do?
 
+        // Caches renderer references and highlight materials.
         void Start()
         {
             tileRenderer = GetComponent<MeshRenderer>();
@@ -43,6 +45,7 @@ private Plant currentPlant;
             }
         }
 
+        // Primary interaction state machine for till/water/plant progression.
         public void Interact()
         {
             switch(tileCondition)
@@ -56,6 +59,7 @@ private Plant currentPlant;
             EvaluateAllTilesRewardFallback();
         }
 
+        // Transitions tile to tilled state and refreshes visuals/audio.
         public void Till()
         {
             tileCondition = FarmTile.Condition.Tilled;
@@ -63,6 +67,7 @@ private Plant currentPlant;
             tillAudio?.Play();
         }
 
+        // Waters planted crop if present; otherwise waters bare tilled soil.
         public void Water()
         {
             if (tileCondition == Condition.Planted && currentPlant != null)
@@ -76,6 +81,8 @@ private Plant currentPlant;
             UpdateVisual();
             waterAudio?.Play();
         }
+
+        // Spawns plant prefab and transitions tile into planted state.
         private void PlantSeed()
         {
             if (currentPlant != null)
@@ -87,6 +94,8 @@ private Plant currentPlant;
             tileCondition = Condition.Planted;
             UpdateVisual();
         }
+
+        // Clears existing plant and resets tile to grass state.
         private void ClearPlant()
         {
             Destroy(currentPlant.gameObject);
@@ -95,6 +104,7 @@ private Plant currentPlant;
             UpdateVisual();
         }
 
+        // Applies material based on current tile condition.
         private void UpdateVisual()
         {
             if(tileRenderer == null) return;
@@ -106,6 +116,7 @@ private Plant currentPlant;
             }
         }
 
+        // Toggles emissive highlight on tile border materials.
         public void SetHighlight(bool active)
         {
             foreach (Material m in materials)
@@ -122,6 +133,7 @@ private Plant currentPlant;
             if (active) stepAudio.Play();
         }
 
+        // Day tick handler for decay/wither behavior and win-state refresh.
         public void OnDayPassed()
         {
             Condition previousCondition = tileCondition;
@@ -148,6 +160,7 @@ private Plant currentPlant;
             }
         }
 
+        // Legacy fallback reward evaluation when all non-purchase tiles are watered.
         private static void EvaluateAllTilesRewardFallback()
         {
             FarmTile[] tiles = FindObjectsByType<FarmTile>(FindObjectsSortMode.None);

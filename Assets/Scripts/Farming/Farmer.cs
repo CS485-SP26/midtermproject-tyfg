@@ -50,6 +50,7 @@ public class Farmer : MonoBehaviour
     private bool sprintInputHeld;
     private float nextFeedbackTime;
 
+    // Clamps serialized values to safe runtime ranges when edited in inspector.
     private void OnValidate()
     {
         maxEnergy = Mathf.Max(1f, maxEnergy);
@@ -69,6 +70,7 @@ public class Farmer : MonoBehaviour
         feedbackCooldownSeconds = Mathf.Max(0.05f, feedbackCooldownSeconds);
     }
 
+    // Caches dependencies, restores persisted resources, and initializes tool/UI state.
     private void Start()
     {
         animatedController = GetComponent<AnimatedController>();
@@ -103,6 +105,7 @@ public class Farmer : MonoBehaviour
         SetTool("None");
     }
 
+    // Marks that a farmer is currently active so external regen logic can pause.
     private void OnEnable()
     {
         if (resourceState == null)
@@ -112,24 +115,28 @@ public class Farmer : MonoBehaviour
             resourceState.SetFarmerPresent(true);
     }
 
+    // Marks farmer as inactive when component is disabled.
     private void OnDisable()
     {
         if (resourceState != null)
             resourceState.SetFarmerPresent(false);
     }
 
+    // Ensures farmer-presence state is reset if object is destroyed.
     private void OnDestroy()
     {
         if (resourceState != null)
             resourceState.SetFarmerPresent(false);
     }
 
+    // Per-frame stamina drain/regeneration loop.
     private void Update()
     {
         DrainSprintEnergyIfNeeded();
         RegenerateEnergyIfIdle();
     }
 
+    // Activates the matching tool model and hides all others.
     public void SetTool(string tool)
     {
         Debug.Log("SetTool called with: " + tool);
@@ -154,6 +161,7 @@ public class Farmer : MonoBehaviour
         }
     }
 
+    // Accepts sprint input and blocks sprint when out of energy.
     public void SetSprintInput(bool sprintPressed)
     {
         sprintInputHeld = sprintPressed;
@@ -175,6 +183,7 @@ public class Farmer : MonoBehaviour
         }
     }
 
+    // Attempts to spend jump energy and reports failure feedback.
     public bool TryConsumeJumpEnergy()
     {
         if (TryConsumeEnergy(jumpEnergyCost))
@@ -184,6 +193,7 @@ public class Farmer : MonoBehaviour
         return false;
     }
 
+    // Handles interaction behavior for the selected tile condition.
     public void TryTileInteraction(FarmTile tile)
     {
         if (tile == null)
@@ -225,11 +235,13 @@ public class Farmer : MonoBehaviour
         }
     }
 
+    // Refills player water resource to full capacity.
     public void RefillWaterToFull()
     {
         SetWaterLevel(maxWater);
     }
 
+    // Applies sprint energy drain when sprinting with movement input.
     private void DrainSprintEnergyIfNeeded()
     {
         bool hasMovementInput = movementController != null && movementController.HasMovementInput;
@@ -246,6 +258,7 @@ public class Farmer : MonoBehaviour
             movementController.SetSprint(shouldSprint);
     }
 
+    // Restores energy over time while not actively sprinting.
     private void RegenerateEnergyIfIdle()
     {
         bool isActivelySprinting = sprintInputHeld && movementController != null && movementController.HasMovementInput;
@@ -255,6 +268,7 @@ public class Farmer : MonoBehaviour
         SetEnergyLevel(currentEnergy + (energyRegenPerSecond * Time.deltaTime));
     }
 
+    // Tries to spend energy; returns false if balance is insufficient.
     private bool TryConsumeEnergy(float amount)
     {
         if (amount <= 0f)
@@ -267,6 +281,7 @@ public class Farmer : MonoBehaviour
         return true;
     }
 
+    // Tries to spend water; returns false if balance is insufficient.
     private bool TryConsumeWater(float amount)
     {
         if (amount <= 0f)
@@ -279,6 +294,7 @@ public class Farmer : MonoBehaviour
         return true;
     }
 
+    // Updates current energy, UI bar fill, and shared resource-state mirror.
     private void SetEnergyLevel(float value)
     {
         currentEnergy = Mathf.Clamp(value, 0f, maxEnergy);
@@ -291,6 +307,7 @@ public class Farmer : MonoBehaviour
             resourceState.SetEnergy(currentEnergy);
     }
 
+    // Updates current water, UI bar fill, and shared resource-state mirror.
     private void SetWaterLevel(float value)
     {
         currentWater = Mathf.Clamp(value, 0f, maxWater);
@@ -303,6 +320,7 @@ public class Farmer : MonoBehaviour
             resourceState.SetWater(currentWater);
     }
 
+    // Spawns a temporary floating message for blocked actions.
     private void ShowActionBlockedFeedback(string message)
     {
         if (string.IsNullOrWhiteSpace(message) || Time.time < nextFeedbackTime)
@@ -337,6 +355,7 @@ public class Farmer : MonoBehaviour
         popup.Configure(feedbackDurationSeconds, feedbackRisePixels);
     }
 
+    // Resolves an active canvas target for runtime feedback notifications.
     private Canvas ResolveCanvas()
     {
         if (notificationCanvas != null && notificationCanvas.isActiveAndEnabled)
@@ -355,6 +374,7 @@ public class Farmer : MonoBehaviour
         return null;
     }
 
+    // Auto-locates energy/water progress bars in scene by explicit names/fallbacks.
     private void AutoBindProgressBars()
     {
         ProgressBar[] bars = FindProgressBarsInCurrentScene();
@@ -389,6 +409,7 @@ public class Farmer : MonoBehaviour
         }
     }
 
+    // Finds progress bars scoped to current scene roots (with global fallback).
     private ProgressBar[] FindProgressBarsInCurrentScene()
     {
         Scene scene = gameObject.scene;
@@ -425,6 +446,7 @@ public class Farmer : MonoBehaviour
         return result;
     }
 
+    // Finds a progress bar with exact object-name match.
     private static ProgressBar FindProgressBarByName(string objectName, ProgressBar[] bars)
     {
         if (string.IsNullOrWhiteSpace(objectName) || bars == null || bars.Length == 0)
@@ -439,6 +461,7 @@ public class Farmer : MonoBehaviour
         return null;
     }
 
+    // Finds first progress bar whose object name contains a token.
     private static ProgressBar FindProgressBarByPartialName(string token, ProgressBar[] bars)
     {
         if (string.IsNullOrWhiteSpace(token) || bars == null || bars.Length == 0)
@@ -457,6 +480,7 @@ public class Farmer : MonoBehaviour
         return null;
     }
 
+    // Creates missing companion bar when only one of energy/water bars exists.
     private void EnsureBothProgressBars()
     {
         if (energyLevelUI != null && waterLevelUI != null)
@@ -472,6 +496,7 @@ public class Farmer : MonoBehaviour
             waterLevelUI = CloneCompanionBar(energyLevelUI, waterBarObjectName, new Vector2(0f, -36f));
     }
 
+    // Clones a template progress bar and offsets it for paired HUD layout.
     private static ProgressBar CloneCompanionBar(ProgressBar template, string objectName, Vector2 positionOffset)
     {
         if (template == null)
@@ -489,6 +514,7 @@ public class Farmer : MonoBehaviour
         return clone.GetComponent<ProgressBar>();
     }
 
+    // Migrates old normalized-water serialized values to absolute-water units.
     private void ApplyLegacyWaterMigration()
     {
         if (!migrateLegacyWaterValues || maxWater <= 1f)

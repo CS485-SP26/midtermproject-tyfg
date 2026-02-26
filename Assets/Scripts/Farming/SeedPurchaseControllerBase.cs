@@ -2,6 +2,16 @@ using Core;
 using TMPro;
 using UnityEngine;
 
+/*
+* This class checks for the win condition of the farm scene, which is when all farmable tiles are watered. It periodically checks the state
+     of all farm tiles and awards the player with funds if a tile is newly watered.
+* Exposes:
+*   - NotifyTileStatePotentiallyChanged(): A static method that can be called by farm tiles when their state changes to trigger a 
+*    re-evaluation of the win condition.
+* Requires:
+*   - A reference to the GameManager to check and set flags for reward distribution.
+*/
+
 namespace Farming
 {
     public abstract class SeedPurchaseControllerBase : MonoBehaviour
@@ -21,6 +31,7 @@ namespace Farming
 
         protected IEconomyService economyService;
 
+        // Validates purchase and notification configuration values.
         protected virtual void OnValidate()
         {
             if (seedCost < 1)
@@ -39,11 +50,13 @@ namespace Farming
                 notificationDurationSeconds = 0.1f;
         }
 
+        // Resolves economy service dependency.
         protected virtual void Awake()
         {
             economyService = GameManager.Instance;
         }
 
+        // Attempts purchase transaction, emits notification, and invokes success/fail hooks.
         protected bool TryPurchaseAndNotify()
         {
             if (economyService == null)
@@ -62,9 +75,12 @@ namespace Farming
             return false;
         }
 
+        // Optional subclass hook called after successful purchase.
         protected virtual void OnPurchaseSucceeded() { }
+        // Optional subclass hook called after failed purchase attempt.
         protected virtual void OnPurchaseFailed() { }
 
+        // Returns current funds balance from economy service.
         protected int GetFundsBalance()
         {
             if (economyService == null)
@@ -73,12 +89,14 @@ namespace Farming
             return economyService == null ? 0 : economyService.GetResourceAmount(EconomyResource.Funds);
         }
 
+        // Builds formatted success message for UI notification.
         private string BuildPurchaseSuccessMessage()
         {
             string seedWord = seedsPerPurchase == 1 ? "seed" : "seeds";
             return $"<color=#ff4d4d>-{seedCost}$</color>  <color=#4dff88>+{seedsPerPurchase} {seedWord}</color>";
         }
 
+        // Spawns floating UI text popup to communicate purchase outcome.
         protected void SpawnFloatingNotification(string message, bool richText)
         {
             Canvas canvas = ResolveCanvas();
@@ -106,6 +124,7 @@ namespace Farming
             popup.Configure(notificationDurationSeconds, notificationRisePixels);
         }
 
+        // Finds an active canvas for notification placement.
         private Canvas ResolveCanvas()
         {
             if (notificationCanvas != null)
