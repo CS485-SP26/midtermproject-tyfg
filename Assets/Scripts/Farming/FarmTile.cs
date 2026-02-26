@@ -49,7 +49,13 @@ private Plant currentPlant;
             {
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
-               case FarmTile.Condition.Watered: PlantSeed();break;
+                case FarmTile.Condition.Watered: PlantSeed();break;
+                case FarmTile.Condition.Planted:
+                {
+                    // ClearPlant();
+                    // Till();
+                    Water();
+                } break;
             }
             daysSinceLastInteraction = 0;
             FarmWinController.NotifyTileStatePotentiallyChanged();

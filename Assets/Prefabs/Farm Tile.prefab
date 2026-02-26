@@ -112,6 +112,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &2857567283505000225
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1478121926401172920}
+  m_Layer: 0
+  m_Name: PlantPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1478121926401172920
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2857567283505000225}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.59, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5125769786370421822}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5099723773160127406
 GameObject:
   m_ObjectHideFlags: 0
@@ -345,13 +376,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5125769786370421822}
+  - component: {fileID: 467610718995461355}
   - component: {fileID: 3182582971418847539}
   - component: {fileID: 7166751367158549041}
   - component: {fileID: 4838417747614253864}
   - component: {fileID: -4219563466296458282}
   - component: {fileID: -7930267235150295811}
   - component: {fileID: 9022809374785031123}
-  - component: {fileID: 467610718995461355}
   m_Layer: 0
   m_Name: Farm Tile
   m_TagString: Farm Tile
@@ -376,8 +407,30 @@ Transform:
   - {fileID: 8690322729039693690}
   - {fileID: 6603983625934086341}
   - {fileID: 7956709482353416130}
+  - {fileID: 1478121926401172920}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &467610718995461355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8145061694655009692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bd8d0ba986b74c81b4a572f5804cd2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FarmTile
+  tileCondition: 0
+  plantSpawnPoint: {fileID: 1478121926401172920}
+  plantPrefab: {fileID: 8079531619789522843, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+  grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
+  tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
+  wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
+  stepAudio: {fileID: -4219563466296458282}
+  tillAudio: {fileID: -7930267235150295811}
+  waterAudio: {fileID: 9022809374785031123}
 --- !u!33 &3182582971418847539
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -747,25 +800,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &467610718995461355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8145061694655009692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bd8d0ba986b74c81b4a572f5804cd2e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FarmTile
-  tileCondition: 0
-  grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
-  tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
-  wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
-  stepAudio: {fileID: -4219563466296458282}
-  tillAudio: {fileID: -7930267235150295811}
-  waterAudio: {fileID: 9022809374785031123}
 --- !u!1 &9212299579036818360
 GameObject:
   m_ObjectHideFlags: 0
