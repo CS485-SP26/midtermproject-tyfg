@@ -15,13 +15,10 @@ namespace Farming
         [SerializeField] private Transform plantSpawnPoint;
         [SerializeField] private GameObject plantPrefab;
 
-<<<<<<< Updated upstream
-=======
         
         private Vector3 plantSpawnPointPos; // Set in Start()
 
         // Runtime plant instance currently occupying this tile (if any).
->>>>>>> Stashed changes
 private Plant currentPlant;
         [Header("Visuals")]
         [SerializeField] private Material grassMaterial;
@@ -59,15 +56,12 @@ private Plant currentPlant;
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
                 case FarmTile.Condition.Watered: PlantSeed();break;
-<<<<<<< Updated upstream
                 case FarmTile.Condition.Planted:
                 {
                     // ClearPlant();
                     // Till();
                     Water();
                 } break;
-=======
->>>>>>> Stashed changes
             }
             daysSinceLastInteraction = 0;
             FarmWinController.NotifyTileStatePotentiallyChanged();
@@ -94,13 +88,10 @@ private Plant currentPlant;
             UpdateVisual();
             waterAudio?.Play();
         }
-<<<<<<< Updated upstream
-=======
 
         // TODO: Check if we need to destroy plantObj at any point
         GameObject plantObj;
         // Spawns plant prefab and transitions tile into planted state.
->>>>>>> Stashed changes
         private void PlantSeed()
         {
             if (currentPlant != null)
