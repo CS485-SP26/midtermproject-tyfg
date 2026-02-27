@@ -35,7 +35,7 @@ public class Plant : MonoBehaviour
     // Water threshold required to transition from Planted -> Growing.
     [SerializeField] private float waterNeededToGrow = 5f;
     // Duration in Growing state before becoming Mature.
-    [SerializeField] private float growTime = 1000f;
+    [SerializeField] private float growTime = 10f;
     // Whether the plant continues to produce fruit after first harvest
     [SerializeField] private bool canRegrowFruit = false;
 
@@ -46,7 +46,7 @@ public class Plant : MonoBehaviour
     [SerializeField] private GameObject matureModel;
     [SerializeField] private GameObject witheredModel;
 
-    [Header("For reference, don't change")]
+    [Header("For reference, don't change in inspector")]
     [SerializeField] private string plantState;
     [SerializeField] private float CurrentWater;
     [SerializeField] private float GrowTimeLeft;
@@ -66,6 +66,7 @@ public class Plant : MonoBehaviour
     private void Start()
     {
         SetState(PlantState.Planted);
+        growTimer = 0f;
         Debug.Log("Plant's parent tile: " + Tile.ToString());
     }
 
@@ -74,10 +75,10 @@ public class Plant : MonoBehaviour
     {
         // For debugging:
         plantState = CurrentState.ToString();
-        if (Tile != null) CurrentWater = Tile.GetWater();
         
-
         if (Tile == null) return;
+        else CurrentWater = Tile.GetWater();
+
         if (CurrentState == PlantState.Withered || CurrentState == PlantState.Mature)
             return;
 
@@ -88,38 +89,27 @@ public class Plant : MonoBehaviour
             return;
         }
 
-        if (CurrentState == PlantState.Planted || CurrentState == PlantState.Growing)
-        {
-            growTimer += Time.fixedDeltaTime;
+        // HW6 Part 11 - Growing Plants:
 
-            // HW6 Part 11 - Growing Plants
-            
-            if (growTimer >= growTime)
-            {
-                SetState(PlantState.Mature);
-            }
-            else if (growTimer >= growTime / 4) // Plant will "sprout" a quarter of the way through its growth cycle.
-                                            // This timing is arbitrary for now.
+        // Conditions necessary for plant to sprout.
+        if (Tile.GetWater() >= waterNeededToGrow)
+        {
+            // Plant will "sprout" when growTimer reaches 5. (arbitrary)
+            if (growTimer >= 5f && CurrentState == PlantState.Planted)
             {
                 SetState(PlantState.Growing);
             }
 
-            GrowTimeLeft = growTimer - growTime;
+            if (CurrentState == PlantState.Growing && growTimer >= growTime)
+            {
+                SetState(PlantState.Mature);
+                growTimer = 0f;
+                GrowTimeLeft = 0f;
+            }
+            growTimer += Time.fixedDeltaTime;
+            GrowTimeLeft = growTime - growTimer;
         }
-    }
-
-    // Adds water and advances into Growing once threshold is reached.
-    public void AddWater(float amount)
-    {
-        if (CurrentState == PlantState.Withered || CurrentState == PlantState.Mature)
-            return;
-
-        if (CurrentState == PlantState.Planted && Tile.GetWater() >= waterNeededToGrow)
-        {
-            SetState(PlantState.Growing);
-        }
-
-        //if (CurrentState == PlantState.Planted)
+        
     }
 
     // Destroys the plant object (used when tile resets).
@@ -128,12 +118,16 @@ public class Plant : MonoBehaviour
         Destroy(gameObject);
     }
 
+    PlantState PrevState;
     // Sets current state and refreshes active visual model.
     private void SetState(PlantState newState)
     {
         Debug.Log("Plant changed state: " + newState.ToString());
+        PrevState = CurrentState;
         CurrentState = newState;
         UpdateVisuals();
+
+        Debug.Log($"Plant visibility: {plantedModel.activeInHierarchy}, {growingModel.activeInHierarchy}, {matureModel.activeInHierarchy}, {witheredModel.activeInHierarchy}");
     }
 
     // Enables only the model matching current state.

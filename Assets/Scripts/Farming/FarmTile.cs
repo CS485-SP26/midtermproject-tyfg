@@ -22,6 +22,7 @@ using UnityEngine.Tilemaps;
 
 namespace Farming 
 {
+    [RequireComponent(typeof(Transform))]
     public class FarmTile : MonoBehaviour
     {
         private const int FallbackAllTilesRewardFunds = 25;
@@ -30,8 +31,7 @@ namespace Farming
 
         [SerializeField] private Condition tileCondition = Condition.Grass; 
         // Continuous water loss over time.
-        [SerializeField] private float waterDecayPerSecond = 0.2f;
-        [SerializeField] private Transform plantSpawnPoint;
+        [SerializeField] private float waterDecayPerSecond = 0.1f;
         [SerializeField] private GameObject plantPrefab;
 
         private Vector3 plantSpawnPointPos; // Set in Start()
@@ -63,9 +63,6 @@ private Plant currentPlant;
         {
             tileRenderer = GetComponent<MeshRenderer>();
             Debug.Assert(tileRenderer, "FarmTile requires a MeshRenderer");
-            //plantSpawnPointPos = plantSpawnPoint.position;
-
-            plantSpawnPoint = GetComponent<Transform>();
 
             foreach (Transform edge in transform)
             {
@@ -101,8 +98,6 @@ private Plant currentPlant;
             daysSinceLastInteraction = 0;
             FarmWinController.NotifyTileStatePotentiallyChanged();
             EvaluateAllTilesRewardFallback();
-
-            Debug.Log(currentPlant.CurrentState + " - Water: " + currentWater);
         }
 
         // Transitions tile to tilled state and refreshes visuals/audio.
@@ -149,10 +144,12 @@ private Plant currentPlant;
         {
             if (currentPlant != null) return;
 
-            plantObj = Instantiate(plantPrefab, plantSpawnPointPos, Quaternion.identity);
+            plantObj = Instantiate(plantPrefab, transform.position, Quaternion.identity);
             currentPlant = plantObj.GetComponent<Plant>();
             currentPlant.SetParentTile(this);
             tileCondition = Condition.Planted;
+            plantObj.SetActive(true);
+            Debug.Log("Plant active? " + plantObj.activeInHierarchy);
             UpdateVisual();
         }
 
