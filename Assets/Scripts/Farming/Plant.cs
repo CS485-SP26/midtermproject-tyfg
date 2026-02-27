@@ -127,12 +127,13 @@ public class Plant : MonoBehaviour
         CurrentState = newState;
         UpdateVisuals();
 
-        Debug.Log($"Plant visibility: {plantedModel.activeInHierarchy}, {growingModel.activeInHierarchy}, {matureModel.activeInHierarchy}, {witheredModel.activeInHierarchy}");
+        Debug.Log($"Plant visibility: {plantedModel.activeSelf}, {growingModel.activeSelf}, {matureModel.activeSelf}, {witheredModel.activeSelf}");
     }
 
     // Enables only the model matching current state.
     private void UpdateVisuals()
     {
+        Debug.Log("CURRENT STATE: " + CurrentState);
         plantedModel.SetActive(CurrentState == PlantState.Planted); // Shows this model when seed is first planted until growTime is reached
         growingModel.SetActive(CurrentState == PlantState.Growing);
         matureModel.SetActive(CurrentState == PlantState.Mature); // Changes model to fully grown plant at end of growTime

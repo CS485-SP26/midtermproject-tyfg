@@ -50,7 +50,7 @@ MonoBehaviour:
   plantedModel: {fileID: 1000011580534764, guid: c26cacf51e485c54b95fdbf9ad976ddf, type: 3}
   growingModel: {fileID: 1000013410243764, guid: 56b36da289d9a9e4cb37c5f588e23748, type: 3}
   matureModel: {fileID: 1000014111768446, guid: 2cf13a738fc434c46bda5ebf7ca44756, type: 3}
-  witheredModel: {fileID: 1000011580534764, guid: c26cacf51e485c54b95fdbf9ad976ddf, type: 3}
+  witheredModel: {fileID: 1562575627230960, guid: 01bdef6597b249b44a9530ab656246fc, type: 3}
   plantState: 
   CurrentWater: 0
   GrowTimeLeft: 0
