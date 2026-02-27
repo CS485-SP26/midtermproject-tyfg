@@ -249,11 +249,11 @@ public class Farmer : MonoBehaviour
                 break;
 
             case FarmTile.Condition.Watered:
-                Debug.Log("Tile is ready for planting");
+                Debug.Log("Now planting a seed.");
                 tile.Interact();
                 break;
             case FarmTile.Condition.Planted:
-                Debug.Log("Tile is currently planted. Destroying plant.");
+                Debug.Log("Watering planted tile.");
                 tile.Interact();
                 break;
         }

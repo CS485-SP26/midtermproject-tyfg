@@ -67,20 +67,26 @@ public class Plant : MonoBehaviour
         if (currentWater <= 0f)
         {
             SetState(PlantState.Withered);
+            Debug.Log("A plant has withered.");
             return;
         }
 
-        if (CurrentState == PlantState.Growing)
+        if (CurrentState == PlantState.Planted || CurrentState == PlantState.Growing)
         {
             growTimer += Time.deltaTime;
 
             // HW6 Part 11 - Growing Plants
+            
             if (growTimer >= growTime)
             {
                 SetState(PlantState.Mature);
             }
+            else if (growTimer >= growTime / 4) // Plant will "sprout" a quarter of the way through its growth cycle.
+                                            // This timing is arbitrary for now.
+            {
+                SetState(PlantState.Growing);
+            }
         }
-        UpdateVisuals();
     }
 
     // Adds water and advances into Growing once threshold is reached.
@@ -113,9 +119,9 @@ public class Plant : MonoBehaviour
     // Enables only the model matching current state.
     private void UpdateVisuals()
     {
-        plantedModel.SetActive(CurrentState == PlantState.Planted);
+        plantedModel.SetActive(CurrentState == PlantState.Planted); // Shows this model when seed is first planted until growTime is reached
         growingModel.SetActive(CurrentState == PlantState.Growing);
-        matureModel.SetActive(CurrentState == PlantState.Mature);
+        matureModel.SetActive(CurrentState == PlantState.Mature); // Changes model to fully grown plant at end of growTime
         witheredModel.SetActive(CurrentState == PlantState.Withered);
     }
 }
