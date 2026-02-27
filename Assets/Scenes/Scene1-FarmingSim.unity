@@ -2321,6 +2321,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -2865,6 +2866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -3424,6 +3426,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -4853,6 +4856,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -5285,6 +5289,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -5717,6 +5722,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -6595,6 +6601,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -7262,6 +7269,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -9131,6 +9139,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -10123,6 +10132,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -10790,6 +10800,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -11222,6 +11233,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -11654,6 +11666,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -13604,6 +13617,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -15982,6 +15996,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -16599,6 +16614,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
+  waterDecayPerSecond: 0.2
   plantSpawnPoint: {fileID: 0}
   plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
@@ -17281,6 +17297,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 366622688859391391, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: growTime
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.6466

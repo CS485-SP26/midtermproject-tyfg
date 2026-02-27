@@ -1,3 +1,6 @@
+using System;
+using Farming;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /*
@@ -31,10 +34,10 @@ public class Plant : MonoBehaviour
     [Header("Growth Settings")]
     // Water threshold required to transition from Planted -> Growing.
     [SerializeField] private float waterNeededToGrow = 5f;
-    // Continuous water loss over time.
-    [SerializeField] private float waterDecayPerSecond = 0.2f;
     // Duration in Growing state before becoming Mature.
-    [SerializeField] private float growTime = 10f;
+    [SerializeField] private float growTime = 1000f;
+    // Whether the plant continues to produce fruit after first harvest
+    [SerializeField] private bool canRegrowFruit = false;
 
     [Header("Visuals")]
     // Per-state models toggled by UpdateVisuals().
@@ -43,37 +46,51 @@ public class Plant : MonoBehaviour
     [SerializeField] private GameObject matureModel;
     [SerializeField] private GameObject witheredModel;
 
+    [Header("For reference, don't change")]
+    [SerializeField] private string plantState;
+    [SerializeField] private float CurrentWater;
+    [SerializeField] private float GrowTimeLeft;
+
+
     // Current lifecycle state.
     public PlantState CurrentState { get; private set; }
 
-    // Runtime water and growth timers.
-    private float currentWater;
-    private float growTimer;
+
+    // Runtime growth timer.
+     [SerializeField] private float growTimer = 0f;
+
+    // Reference to parent FarmTile
+    private FarmTile Tile;
 
     // Initializes plant in newly planted state.
     private void Start()
     {
         SetState(PlantState.Planted);
+        Debug.Log("Plant's parent tile: " + Tile.ToString());
     }
 
     // Handles water decay, withering, and growth progression.
-    private void Update()
+    private void FixedUpdate()
     {
-        if (CurrentState == PlantState.Withered)
+        // For debugging:
+        plantState = CurrentState.ToString();
+        if (Tile != null) CurrentWater = Tile.GetWater();
+        
+
+        if (Tile == null) return;
+        if (CurrentState == PlantState.Withered || CurrentState == PlantState.Mature)
             return;
 
-        currentWater -= waterDecayPerSecond * Time.deltaTime;
-
-        if (currentWater <= 0f)
+        if (Tile.GetWater() <= 0.1f)
         {
             SetState(PlantState.Withered);
-            Debug.Log("A plant has withered.");
+            Debug.Log("A plant has withered. Water: " + Tile.GetWater());
             return;
         }
 
         if (CurrentState == PlantState.Planted || CurrentState == PlantState.Growing)
         {
-            growTimer += Time.deltaTime;
+            growTimer += Time.fixedDeltaTime;
 
             // HW6 Part 11 - Growing Plants
             
@@ -86,6 +103,8 @@ public class Plant : MonoBehaviour
             {
                 SetState(PlantState.Growing);
             }
+
+            GrowTimeLeft = growTimer - growTime;
         }
     }
 
@@ -95,12 +114,12 @@ public class Plant : MonoBehaviour
         if (CurrentState == PlantState.Withered || CurrentState == PlantState.Mature)
             return;
 
-        currentWater += amount;
-
-        if (CurrentState == PlantState.Planted && currentWater >= waterNeededToGrow)
+        if (CurrentState == PlantState.Planted && Tile.GetWater() >= waterNeededToGrow)
         {
             SetState(PlantState.Growing);
         }
+
+        //if (CurrentState == PlantState.Planted)
     }
 
     // Destroys the plant object (used when tile resets).
@@ -112,6 +131,7 @@ public class Plant : MonoBehaviour
     // Sets current state and refreshes active visual model.
     private void SetState(PlantState newState)
     {
+        Debug.Log("Plant changed state: " + newState.ToString());
         CurrentState = newState;
         UpdateVisuals();
     }
@@ -123,5 +143,11 @@ public class Plant : MonoBehaviour
         growingModel.SetActive(CurrentState == PlantState.Growing);
         matureModel.SetActive(CurrentState == PlantState.Mature); // Changes model to fully grown plant at end of growTime
         witheredModel.SetActive(CurrentState == PlantState.Withered);
+    }
+
+    // Tell the plant what tile it's on
+    internal void SetParentTile(FarmTile farmTile)
+    {
+        Tile = farmTile;
     }
 }

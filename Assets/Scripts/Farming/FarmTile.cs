@@ -3,6 +3,7 @@ using UnityEngine;
 using Environment;
 using Core;
 using UnityEngine.UIElements;
+using UnityEngine.Tilemaps;
 
 /*
 * This class represents a single tile in the farm. It manages its own state (grass, tilled, watered, planted) and handles interactions 
@@ -28,6 +29,8 @@ namespace Farming
         public enum Condition { Grass, Tilled, Watered, Planted }
 
         [SerializeField] private Condition tileCondition = Condition.Grass; 
+        // Continuous water loss over time.
+        [SerializeField] private float waterDecayPerSecond = 0.2f;
         [SerializeField] private Transform plantSpawnPoint;
         [SerializeField] private GameObject plantPrefab;
 
@@ -35,6 +38,9 @@ namespace Farming
 
         // Runtime plant instance currently occupying this tile (if any).
 private Plant currentPlant;
+        [Header("Data")]
+        private float waterAmount = 5f;
+
         [Header("Visuals")]
         [SerializeField] private Material grassMaterial;
         [SerializeField] private Material tilledMaterial;
@@ -47,6 +53,7 @@ private Plant currentPlant;
         [SerializeField] private AudioSource waterAudio;
 
         List<Material> materials = new List<Material>();
+        private float currentWater = 0f;
 
         private int daysSinceLastInteraction = 0;
         public FarmTile.Condition GetCondition { get { return tileCondition; } } // TODO: Consider what the set would do?
@@ -63,6 +70,16 @@ private Plant currentPlant;
             foreach (Transform edge in transform)
             {
                 materials.Add(edge.gameObject.GetComponent<MeshRenderer>().material);
+            }
+            currentWater = 0f;
+            waterDecayPerSecond *= .02f; // hopefully accounts for FixedUpdate frequency
+        }
+
+        private void FixedUpdate()
+        {
+            if (currentWater > 0)
+            {
+                currentWater -= waterDecayPerSecond;
             }
         }
 
@@ -84,6 +101,8 @@ private Plant currentPlant;
             daysSinceLastInteraction = 0;
             FarmWinController.NotifyTileStatePotentiallyChanged();
             EvaluateAllTilesRewardFallback();
+
+            Debug.Log(currentPlant.CurrentState + " - Water: " + currentWater);
         }
 
         // Transitions tile to tilled state and refreshes visuals/audio.
@@ -97,16 +116,28 @@ private Plant currentPlant;
         // Waters planted crop if present; otherwise waters bare tilled soil.
         public void Water()
         {
-            if (tileCondition == Condition.Planted && currentPlant != null)
-             {
-                currentPlant.AddWater(1f);
-                waterAudio?.Play();
-                return;
+            if (tileCondition == Condition.Grass) return; // Can't water grass
+
+            // Tile condition only updates on Tilled. Prevents overwriting Planted condition.
+            if (tileCondition == Condition.Tilled)
+            {
+                tileCondition = Condition.Watered;
+                UpdateVisual();
             }
 
-            tileCondition = Condition.Watered;
-            UpdateVisual();
+            currentWater += waterAmount;
             waterAudio?.Play();
+            return;
+        }
+
+        public float GetWater()
+        {
+            return currentWater;
+        }
+
+        private void SetNoWater()
+        {
+            currentWater = 0f;
         }
 
 
@@ -118,15 +149,9 @@ private Plant currentPlant;
         {
             if (currentPlant != null) return;
 
-            //GameObject plantObj = Instantiate(plantPrefab, plantSpawnPoint.position, Quaternion.identity);
-            
-            // TODO: Overwritten for testing purposes: 
-            //plantSpawnPointPos = Vector3.zero;
-
             plantObj = Instantiate(plantPrefab, plantSpawnPointPos, Quaternion.identity);
-            
             currentPlant = plantObj.GetComponent<Plant>();
-
+            currentPlant.SetParentTile(this);
             tileCondition = Condition.Planted;
             UpdateVisual();
         }
