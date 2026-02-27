@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Environment;
 using Core;
+using UnityEngine.UIElements;
 
 /*
 * This class represents a single tile in the farm. It manages its own state (grass, tilled, watered, planted) and handles interactions 
@@ -30,6 +31,8 @@ namespace Farming
         [SerializeField] private Transform plantSpawnPoint;
         [SerializeField] private GameObject plantPrefab;
 
+        private Vector3 plantSpawnPointPos; // Set in Start()
+
         // Runtime plant instance currently occupying this tile (if any).
 private Plant currentPlant;
         [Header("Visuals")]
@@ -53,6 +56,9 @@ private Plant currentPlant;
         {
             tileRenderer = GetComponent<MeshRenderer>();
             Debug.Assert(tileRenderer, "FarmTile requires a MeshRenderer");
+            //plantSpawnPointPos = plantSpawnPoint.position;
+
+            plantSpawnPoint = GetComponent<Transform>();
 
             foreach (Transform edge in transform)
             {
@@ -67,7 +73,13 @@ private Plant currentPlant;
             {
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
-               case FarmTile.Condition.Watered: PlantSeed();break;
+                case FarmTile.Condition.Watered: PlantSeed();break;
+                case FarmTile.Condition.Planted:
+                {
+                    // ClearPlant();
+                    // Till();
+                    Water();
+                } break;
             }
             daysSinceLastInteraction = 0;
             FarmWinController.NotifyTileStatePotentiallyChanged();
@@ -97,13 +109,22 @@ private Plant currentPlant;
             waterAudio?.Play();
         }
 
+
+        // TODO: Check if we need to destroy plantObj at any point
+        GameObject plantObj;
+
         // Spawns plant prefab and transitions tile into planted state.
         private void PlantSeed()
         {
-            if (currentPlant != null)
-                return;
+            if (currentPlant != null) return;
 
-            GameObject plantObj = Instantiate(plantPrefab, plantSpawnPoint.position, Quaternion.identity);
+            //GameObject plantObj = Instantiate(plantPrefab, plantSpawnPoint.position, Quaternion.identity);
+            
+            // TODO: Overwritten for testing purposes: 
+            //plantSpawnPointPos = Vector3.zero;
+
+            plantObj = Instantiate(plantPrefab, plantSpawnPointPos, Quaternion.identity);
+            
             currentPlant = plantObj.GetComponent<Plant>();
 
             tileCondition = Condition.Planted;

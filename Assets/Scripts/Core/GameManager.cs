@@ -32,7 +32,7 @@ namespace Core
         [Header("Starting Data")]
         // Initial values used when the session starts or resets.
         [SerializeField] private int startingFunds = 0;
-        [SerializeField] private int startingSeeds = 0;
+        [SerializeField] private int startingSeeds = 15;
         [SerializeField] private int startingSkillPoints = 0;
 
         // Convenience read-only properties for common resource lookups.

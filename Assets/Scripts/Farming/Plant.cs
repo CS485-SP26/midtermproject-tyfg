@@ -74,9 +74,13 @@ public class Plant : MonoBehaviour
         {
             growTimer += Time.deltaTime;
 
+            // HW6 Part 11 - Growing Plants
             if (growTimer >= growTime)
+            {
                 SetState(PlantState.Mature);
+            }
         }
+        UpdateVisuals();
     }
 
     // Adds water and advances into Growing once threshold is reached.

@@ -2322,7 +2322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -2866,7 +2866,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -3425,7 +3425,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -4213,57 +4213,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 455555335}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &518014849
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 518014851}
-  - component: {fileID: 518014850}
-  m_Layer: 0
-  m_Name: Plant
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &518014850
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518014849}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f06f0a2847c4c194cb9bbbdd9f74e172, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Plant
-  waterNeededToGrow: 5
-  waterDecayPerSecond: 0.2
-  growTime: 10
-  plantedModel: {fileID: 1000011580534764, guid: c26cacf51e485c54b95fdbf9ad976ddf, type: 3}
-  growingModel: {fileID: 1000013410243764, guid: 56b36da289d9a9e4cb37c5f588e23748, type: 3}
-  matureModel: {fileID: 1000014111768446, guid: 2cf13a738fc434c46bda5ebf7ca44756, type: 3}
-  witheredModel: {fileID: 1000011580534764, guid: c26cacf51e485c54b95fdbf9ad976ddf, type: 3}
---- !u!4 &518014851
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518014849}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6466, y: 0.05, z: 4.79486}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &531808571
 GameObject:
   m_ObjectHideFlags: 0
@@ -4905,7 +4854,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -5337,7 +5286,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -5769,7 +5718,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -6647,7 +6596,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -7314,7 +7263,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -9183,7 +9132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -10175,7 +10124,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -10842,7 +10791,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -11274,7 +11223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -11706,7 +11655,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -13656,7 +13605,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -16034,7 +15983,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -16651,7 +16600,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmTile
   tileCondition: 0
   plantSpawnPoint: {fileID: 0}
-  plantPrefab: {fileID: 0}
+  plantPrefab: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
   grassMaterial: {fileID: 2100000, guid: 45eb7efec0c8f504285b382733758e52, type: 2}
   tilledMaterial: {fileID: 2100000, guid: 053fa0c86b03be449bd117d80d1eb19c, type: 2}
   wateredMaterial: {fileID: 2100000, guid: da86e0e9da248f44685781dc53d77c8f, type: 2}
@@ -17324,6 +17273,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b079cfe482d2fe41b4315e111d183d8, type: 3}
+--- !u!1001 &6505413922085835634
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.6466
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4.79486
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 522497049201413845, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5472276026008065918, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
+      propertyPath: m_Name
+      value: Plant
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2ec596d5a30ff684bb467ef4552eee5e, type: 3}
 --- !u!1001 &7462262175994456880
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17440,4 +17446,4 @@ SceneRoots:
   - {fileID: 876916362}
   - {fileID: 1832991199}
   - {fileID: 654905152}
-  - {fileID: 518014851}
+  - {fileID: 6505413922085835634}

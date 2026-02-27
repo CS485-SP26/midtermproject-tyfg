@@ -73,6 +73,7 @@ namespace Character
             animator.SetFloat("VerticalVelocity", moveController.VerticalVelocity);
             animator.SetBool("NearGround", moveController.NearGround());
             animator.SetBool("IsCrouching", moveController.IsCrouchingState());
+            // TODO: CanJump isn't implemented in unity (i think??)
             animator.SetBool("CanJump", moveController.CanJump());
         }
     }
