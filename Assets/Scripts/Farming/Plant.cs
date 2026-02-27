@@ -45,9 +45,13 @@ public class Plant : MonoBehaviour
         if (CurrentState == PlantState.Growing)
         {
             growTimer += Time.deltaTime;
-
+            
+            // HW6 Part 11 - Growing Plants
             if (growTimer >= growTime)
+            {
+                matureModel.SetActive(true);
                 SetState(PlantState.Mature);
+            }
         }
     }
 
