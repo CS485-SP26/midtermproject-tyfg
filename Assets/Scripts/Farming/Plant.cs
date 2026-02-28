@@ -65,9 +65,18 @@ public class Plant : MonoBehaviour
     // Initializes plant in newly planted state.
     private void Start()
     {
+        SetModelsInactive();
         SetState(PlantState.Planted);
         growTimer = 0f;
         Debug.Log("Plant's parent tile: " + Tile.ToString());
+    }
+
+    private void SetModelsInactive()
+    {
+        plantedModel.SetActive(false);
+        growingModel.SetActive(false);
+        matureModel.SetActive(false);
+        witheredModel.SetActive(false);
     }
 
     // Handles water decay, withering, and growth progression.
