@@ -37,7 +37,11 @@ public class Plant : MonoBehaviour
     // Duration in Growing state before becoming Mature.
     [SerializeField] private float growTime = 10f;
     // Whether the plant continues to produce fruit after first harvest
-    [SerializeField] private bool canRegrowFruit = false;
+    [SerializeField] private bool regrowsFruit = false;
+    public bool RegrowsFruit
+    {
+        get { return regrowsFruit; }
+    }
 
     [Header("Visuals")]
     // Per-state models toggled by UpdateVisuals().
@@ -115,6 +119,7 @@ public class Plant : MonoBehaviour
                 growTimer = 0f;
                 GrowTimeLeft = 0f;
             }
+            
             growTimer += Time.fixedDeltaTime;
             GrowTimeLeft = growTime - growTimer;
         }

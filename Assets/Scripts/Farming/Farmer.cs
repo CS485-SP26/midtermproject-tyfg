@@ -244,7 +244,7 @@ public class Farmer : MonoBehaviour
                     return;
                 }
 
-                animatedController.SetTrigger("Water");
+                animatedController.SetTrigger("Water"); // TODO: does this need to be "Watering"?
                 tile.Interact();
                 break;
 
@@ -255,6 +255,9 @@ public class Farmer : MonoBehaviour
             case FarmTile.Condition.Planted:
                 Debug.Log("Watering planted tile.");
                 tile.Interact();
+                break;
+            case FarmTile.Condition.Harvestable:
+                
                 break;
         }
     }

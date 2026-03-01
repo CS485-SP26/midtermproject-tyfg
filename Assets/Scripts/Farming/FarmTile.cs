@@ -27,7 +27,7 @@ namespace Farming
     {
         private const int FallbackAllTilesRewardFunds = 25;
 
-        public enum Condition { Grass, Tilled, Watered, Planted }
+        public enum Condition { Grass, Tilled, Watered, Planted, Harvestable }
 
         [SerializeField] private Condition tileCondition = Condition.Grass; 
         // Continuous water loss over time.
@@ -87,12 +87,20 @@ private Plant currentPlant;
             {
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
-                case FarmTile.Condition.Watered: PlantSeed();break;
+                case FarmTile.Condition.Watered: PlantSeed(); break;
                 case FarmTile.Condition.Planted:
                 {
-                    // ClearPlant();
-                    // Till();
                     Water();
+                } break;
+                case FarmTile.Condition.Harvestable:
+                {
+                    HarvestPlant();
+                    if (!currentPlant.RegrowsFruit)
+                    {
+                        ClearPlant();
+                        Till();
+                    }
+                    
                 } break;
             }
             daysSinceLastInteraction = 0;
@@ -129,12 +137,10 @@ private Plant currentPlant;
         {
             return currentWater;
         }
-
         private void SetNoWater()
         {
             currentWater = 0f;
         }
-
 
         // TODO: Check if we need to destroy plantObj at any point
         GameObject plantObj;
@@ -152,7 +158,12 @@ private Plant currentPlant;
             Debug.Log("Plant active? " + plantObj.activeInHierarchy);
             UpdateVisual();
         }
-
+        
+        private void HarvestPlant()
+        {
+            
+        }
+        
         // Clears existing plant and resets tile to grass state.
         private void ClearPlant()
         {
@@ -204,7 +215,7 @@ private Plant currentPlant;
                 }
             }
 
-            if(daysSinceLastInteraction >= 2)
+            if(daysSinceLastInteraction >= 2) // TODO: Consider making this a [SerializeField]
             {
                 if(tileCondition == FarmTile.Condition.Watered) tileCondition = FarmTile.Condition.Tilled;
                 else if(tileCondition == FarmTile.Condition.Tilled) tileCondition = FarmTile.Condition.Grass;

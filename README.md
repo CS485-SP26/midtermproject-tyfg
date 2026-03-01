@@ -12,6 +12,7 @@
 ### Improvements:
 - Fix problem of the farmer rotating on its own after certain animations
 - Warning in console: `'Player' AnimationEvent 'NewEvent' on animation 'Watering' has no receiver! Are you missing a component?`
+- Consider making check-conditions for `daysSinceLastInteraction` a `[SerializeField]` in FarmTile.cs
 
 ### Completed:
 - Fixed water decay
