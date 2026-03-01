@@ -76,7 +76,7 @@ namespace Farming
                 if (tile == null)
                     continue;
 
-                lastSeenCondition[tile] = tile.GetCondition;
+                lastSeenCondition[tile] = tile.TileCondition;
             }
         }
 
@@ -96,7 +96,7 @@ namespace Farming
                 if (tile == null)
                     continue;
 
-                FarmTile.Condition current = tile.GetCondition;
+                FarmTile.Condition current = tile.TileCondition;
                 if (!lastSeenCondition.TryGetValue(tile, out FarmTile.Condition previous))
                 {
                     previous = awardAlreadyWateredOnStart ? FarmTile.Condition.Grass : current;

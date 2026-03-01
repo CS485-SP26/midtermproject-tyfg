@@ -116,10 +116,11 @@ public class Plant : MonoBehaviour
             if (CurrentState == PlantState.Growing && growTimer >= growTime)
             {
                 SetState(PlantState.Mature);
+                Tile.TileCondition = FarmTile.Condition.Harvestable;
                 growTimer = 0f;
                 GrowTimeLeft = 0f;
             }
-            
+
             growTimer += Time.fixedDeltaTime;
             GrowTimeLeft = growTime - growTimer;
         }
@@ -132,12 +133,10 @@ public class Plant : MonoBehaviour
         Destroy(gameObject);
     }
 
-    PlantState PrevState;
     // Sets current state and refreshes active visual model.
     private void SetState(PlantState newState)
     {
         Debug.Log("Plant changed state: " + newState.ToString());
-        PrevState = CurrentState;
         CurrentState = newState;
         UpdateVisuals();
 

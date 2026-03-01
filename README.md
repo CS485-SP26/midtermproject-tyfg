@@ -13,6 +13,11 @@
 - Fix problem of the farmer rotating on its own after certain animations
 - Warning in console: `'Player' AnimationEvent 'NewEvent' on animation 'Watering' has no receiver! Are you missing a component?`
 - Consider making check-conditions for `daysSinceLastInteraction` a `[SerializeField]` in FarmTile.cs
+- Consider using event listeners for communication between Plant and FarmTiles
+
+### Importance unknown:
+- Change all Update() methods to FixedUpdate() to match the change in Plant and FarmTile classes??
+    (Comparison of use cases: https://www.reddit.com/r/unity/comments/1bwfywa )
 
 ### Completed:
 - Fixed water decay

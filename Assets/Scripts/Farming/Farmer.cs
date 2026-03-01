@@ -224,7 +224,7 @@ public class Farmer : MonoBehaviour
             return;
         }
 
-        switch (tile.GetCondition)
+        switch (tile.TileCondition)
         {
             case FarmTile.Condition.Grass:
                 if (!TryConsumeEnergy(tillEnergyCost))
@@ -257,7 +257,7 @@ public class Farmer : MonoBehaviour
                 tile.Interact();
                 break;
             case FarmTile.Condition.Harvestable:
-                
+
                 break;
         }
     }

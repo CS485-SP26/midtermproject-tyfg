@@ -113,7 +113,7 @@ namespace Farming
                     continue;
 
                 foundAnyFarmableTile = true;
-                if (tile.GetCondition != FarmTile.Condition.Watered)
+                if (tile.TileCondition != FarmTile.Condition.Watered)
                     return false;
             }
 

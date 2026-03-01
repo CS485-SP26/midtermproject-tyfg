@@ -37,7 +37,8 @@ namespace Farming
         private Vector3 plantSpawnPointPos; // Set in Start()
 
         // Runtime plant instance currently occupying this tile (if any).
-private Plant currentPlant;
+        private Plant currentPlant;
+        
         [Header("Data")]
         private float waterAmount = 5f;
 
@@ -56,7 +57,14 @@ private Plant currentPlant;
         private float currentWater = 0f;
 
         private int daysSinceLastInteraction = 0;
-        public FarmTile.Condition GetCondition { get { return tileCondition; } } // TODO: Consider what the set would do?
+        public FarmTile.Condition TileCondition
+        {
+            get { return tileCondition; }
+            set // Used in Plant class to communicate when plant is mature
+            {
+                tileCondition = value;
+            }
+        }
 
         // Caches renderer references and highlight materials.
         void Start()
@@ -88,19 +96,15 @@ private Plant currentPlant;
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
                 case FarmTile.Condition.Watered: PlantSeed(); break;
-                case FarmTile.Condition.Planted:
-                {
-                    Water();
-                } break;
+                case FarmTile.Condition.Planted: Water(); break;
                 case FarmTile.Condition.Harvestable:
                 {
-                    HarvestPlant();
-                    if (!currentPlant.RegrowsFruit)
+                    HarvestPlant(); // Runs regardless of whether plant can regrow fruit
+                    if (!currentPlant.RegrowsFruit) // Only remove plant if it can't regrow
                     {
                         ClearPlant();
                         Till();
                     }
-                    
                 } break;
             }
             daysSinceLastInteraction = 0;
@@ -159,9 +163,14 @@ private Plant currentPlant;
             UpdateVisual();
         }
         
+        // TODO: Take the harvested plant object and store its data in inventory (to be implemented)
         private void HarvestPlant()
         {
-            
+            // I think we need to store DEEP copies of relevant data from the currentPlant (the Plant component of plantObj)
+            // because currentPlant will be destroyed when harvested.
+            // Idea: consider making a data structure for storing plant data, basically separating the Plant class into 
+            // two parts, one for holding data, the other for manipulating that data. 
+            // Separation of concerns or something like that idk. I think it'd feel more organized.
         }
         
         // Clears existing plant and resets tile to grass state.
@@ -247,7 +256,7 @@ private Plant currentPlant;
                     continue;
 
                 foundAnyFarmableTile = true;
-                if (tile.GetCondition != FarmTile.Condition.Watered)
+                if (tile.TileCondition != FarmTile.Condition.Watered)
                 {
                     allWatered = false;
                     break;
