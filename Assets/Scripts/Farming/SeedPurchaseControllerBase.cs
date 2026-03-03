@@ -1,5 +1,4 @@
 using Core;
-using TMPro;
 using UnityEngine;
 
 /*
@@ -99,48 +98,21 @@ namespace Farming
         // Spawns floating UI text popup to communicate purchase outcome.
         protected void SpawnFloatingNotification(string message, bool richText)
         {
-            Canvas canvas = ResolveCanvas();
-            if (canvas == null)
+            IActionFeedbackService feedbackService = ActionFeedbackService.Instance;
+            if (feedbackService == null)
                 return;
 
-            GameObject go = new GameObject("PurchaseNotification", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(CanvasGroup), typeof(FloatingTextPopup));
-            go.transform.SetParent(canvas.transform, false);
-
-            TextMeshProUGUI label = go.GetComponent<TextMeshProUGUI>();
-            label.richText = richText;
-            label.text = message;
-            label.alignment = TextAlignmentOptions.Center;
-            label.fontSize = notificationFontSize;
-            label.color = Color.white;
-
-            RectTransform rt = label.rectTransform;
-            rt.anchorMin = notificationAnchor;
-            rt.anchorMax = notificationAnchor;
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = notificationSize;
-
-            FloatingTextPopup popup = go.GetComponent<FloatingTextPopup>();
-            popup.Configure(notificationDurationSeconds, notificationRisePixels);
-        }
-
-        // Finds an active canvas for notification placement.
-        private Canvas ResolveCanvas()
-        {
-            if (notificationCanvas != null)
-                return notificationCanvas;
-
-            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
-            foreach (Canvas canvas in canvases)
-            {
-                if (canvas != null && canvas.isActiveAndEnabled)
-                {
-                    notificationCanvas = canvas;
-                    return notificationCanvas;
-                }
-            }
-
-            return null;
+            feedbackService.ShowFeedback(
+                message,
+                richText,
+                notificationCanvas,
+                notificationAnchor,
+                notificationSize,
+                notificationFontSize,
+                notificationDurationSeconds,
+                notificationRisePixels,
+                Color.white,
+                "PurchaseNotification");
         }
     }
 }

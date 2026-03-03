@@ -1,8 +1,8 @@
 using UnityEngine;
 using Farming;
 using Character;
-using TMPro;
 using UnityEngine.SceneManagement;
+using Core;
 
  /*
  * The Farmer class manages the player's farming-related actions, resources, and UI.
@@ -60,6 +60,8 @@ public class Farmer : MonoBehaviour
     [SerializeField] private float feedbackCooldownSeconds = 0.6f;
     [SerializeField] private string lowEnergyMessage = "Not enough energy.";
     [SerializeField] private string lowWaterMessage = "Out of water. Refill at the shed.";
+    [SerializeField] private string lowSeedsMessage = "Out of seeds. Buy more seeds.";
+    [SerializeField] private int seedsPerPlant = 1;
 
     private AnimatedController animatedController;
     private MovementController movementController;
@@ -68,6 +70,7 @@ public class Farmer : MonoBehaviour
     private float currentWater;
     private bool sprintInputHeld;
     private float nextFeedbackTime;
+    private IEconomyService economyService;
 
     // Clamps serialized values to safe runtime ranges when edited in inspector.
     private void OnValidate()
@@ -87,6 +90,7 @@ public class Farmer : MonoBehaviour
         feedbackDurationSeconds = Mathf.Max(0.1f, feedbackDurationSeconds);
         feedbackRisePixels = Mathf.Max(0f, feedbackRisePixels);
         feedbackCooldownSeconds = Mathf.Max(0.05f, feedbackCooldownSeconds);
+        seedsPerPlant = Mathf.Max(1, seedsPerPlant);
     }
 
     // Caches dependencies, restores persisted resources, and initializes tool/UI state.
@@ -98,6 +102,7 @@ public class Farmer : MonoBehaviour
         Debug.Assert(movementController, "Farmer requires a MovementController");
 
         ApplyLegacyWaterMigration();
+        economyService = GameManager.Instance;
         resourceState = FarmerResourceState.Instance;
         if (resourceState != null)
         {
@@ -249,6 +254,12 @@ public class Farmer : MonoBehaviour
                 break;
 
             case FarmTile.Condition.Watered:
+                if (!TryConsumeSeeds(seedsPerPlant))
+                {
+                    ShowActionBlockedFeedback(lowSeedsMessage);
+                    return;
+                }
+
                 Debug.Log("Now planting a seed.");
                 tile.Interact();
                 break;
@@ -321,6 +332,18 @@ public class Farmer : MonoBehaviour
         return true;
     }
 
+    // Tries to spend seeds from the economy; returns false if balance is insufficient.
+    private bool TryConsumeSeeds(int amount)
+    {
+        if (amount <= 0)
+            return true;
+
+        if (economyService == null)
+            economyService = GameManager.Instance;
+
+        return economyService != null && economyService.TrySpendResource(EconomyResource.Seeds, amount);
+    }
+
     // Updates current energy, UI bar fill, and shared resource-state mirror.
     private void SetEnergyLevel(float value)
     {
@@ -354,51 +377,21 @@ public class Farmer : MonoBehaviour
             return;
 
         nextFeedbackTime = Time.time + feedbackCooldownSeconds;
-        Canvas canvas = ResolveCanvas();
-        if (canvas == null)
-        {
-            Debug.Log(message);
+        IActionFeedbackService feedbackService = ActionFeedbackService.Instance;
+        if (feedbackService == null)
             return;
-        }
 
-        GameObject go = new GameObject("FarmerFeedback", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(CanvasGroup), typeof(FloatingTextPopup));
-        go.transform.SetParent(canvas.transform, false);
-
-        TextMeshProUGUI label = go.GetComponent<TextMeshProUGUI>();
-        label.richText = false;
-        label.text = message;
-        label.alignment = TextAlignmentOptions.Center;
-        label.fontSize = feedbackFontSize;
-        label.color = Color.white;
-
-        RectTransform rt = label.rectTransform;
-        rt.anchorMin = feedbackAnchor;
-        rt.anchorMax = feedbackAnchor;
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = feedbackSize;
-
-        FloatingTextPopup popup = go.GetComponent<FloatingTextPopup>();
-        popup.Configure(feedbackDurationSeconds, feedbackRisePixels);
-    }
-
-    // Resolves an active canvas target for runtime feedback notifications.
-    private Canvas ResolveCanvas()
-    {
-        if (notificationCanvas != null && notificationCanvas.isActiveAndEnabled)
-            return notificationCanvas;
-
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
-        foreach (Canvas canvas in canvases)
-        {
-            if (canvas != null && canvas.isActiveAndEnabled)
-            {
-                notificationCanvas = canvas;
-                return notificationCanvas;
-            }
-        }
-
-        return null;
+        feedbackService.ShowFeedback(
+            message,
+            false,
+            notificationCanvas,
+            feedbackAnchor,
+            feedbackSize,
+            feedbackFontSize,
+            feedbackDurationSeconds,
+            feedbackRisePixels,
+            Color.white,
+            "FarmerFeedback");
     }
 
     // Auto-locates energy/water progress bars in scene by explicit names/fallbacks.
