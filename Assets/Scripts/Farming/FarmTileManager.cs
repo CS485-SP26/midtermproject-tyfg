@@ -34,18 +34,22 @@ namespace Farming
         {
             Debug.Assert(farmTilePrefab, "FarmTileManager requires a farmTilePrefab");
             Debug.Assert(dayController, "FarmTileManager requires a dayController");
+            RefreshTileCache();
         }
 
         // Subscribes tile day-advance handler when enabled.
         void OnEnable()
         {
-            dayController.dayPassedEvent.AddListener(this.OnDayPassed);
+            RefreshTileCache();
+            if (dayController != null)
+                dayController.dayPassedEvent.AddListener(this.OnDayPassed);
         }
 
         // Unsubscribes tile day-advance handler when disabled.
         void OnDisable()
         {
-            dayController.dayPassedEvent.RemoveListener(this.OnDayPassed);            
+            if (dayController != null)
+                dayController.dayPassedEvent.RemoveListener(this.OnDayPassed);
         }
 
         // UnityEvent callback for one-day progression.
@@ -57,6 +61,9 @@ namespace Farming
         // Advances every tile by the requested number of in-game days.
         public void IncrementDays(int count)
         {
+            if (tiles.Count == 0)
+                RefreshTileCache();
+
             while (count > 0)
             {
                 foreach (FarmTile farmTile in tiles)
@@ -64,6 +71,18 @@ namespace Farming
                     farmTile.OnDayPassed();
                 }
                 count--;
+            }
+        }
+
+        // Rebuilds runtime tile cache from this scene.
+        private void RefreshTileCache()
+        {
+            tiles.Clear();
+            FarmTile[] sceneTiles = FindObjectsByType<FarmTile>(FindObjectsSortMode.None);
+            foreach (FarmTile tile in sceneTiles)
+            {
+                if (tile != null && tile.gameObject.scene == gameObject.scene)
+                    tiles.Add(tile);
             }
         }
 

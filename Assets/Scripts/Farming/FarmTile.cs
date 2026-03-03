@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Environment;
 using Core;
-using UnityEngine.UIElements;
-using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
+using Environment;
 
 /*
 * This class represents a single tile in the farm. It manages its own state (grass, tilled, watered, planted) and handles interactions 
@@ -26,6 +25,7 @@ namespace Farming
     public class FarmTile : MonoBehaviour
     {
         private const int FallbackAllTilesRewardFunds = 25;
+        private const float WitherWaterThreshold = 0.1f;
 
         public enum Condition { Grass, Tilled, Watered, Planted, Harvestable }
 
@@ -33,8 +33,6 @@ namespace Farming
         // Continuous water loss over time.
         [SerializeField] private float waterDecayPerSecond = 0.1f;
         [SerializeField] private GameObject plantPrefab;
-
-        private Vector3 plantSpawnPointPos; // Set in Start()
 
         // Runtime plant instance currently occupying this tile (if any).
         private Plant currentPlant;
@@ -55,6 +53,7 @@ namespace Farming
 
         List<Material> materials = new List<Material>();
         private float currentWater = 0f;
+        private string persistenceKey;
 
         private int daysSinceLastInteraction = 0;
         public FarmTile.Condition TileCondition
@@ -66,6 +65,12 @@ namespace Farming
             }
         }
 
+        // Builds a stable key used to persist this tile's runtime state.
+        private void Awake()
+        {
+            persistenceKey = BuildPersistenceKey();
+        }
+
         // Caches renderer references and highlight materials.
         void Start()
         {
@@ -74,17 +79,32 @@ namespace Farming
 
             foreach (Transform edge in transform)
             {
-                materials.Add(edge.gameObject.GetComponent<MeshRenderer>().material);
+                MeshRenderer edgeRenderer = edge.gameObject.GetComponent<MeshRenderer>();
+                if (edgeRenderer != null)
+                    materials.Add(edgeRenderer.material);
             }
             currentWater = 0f;
             waterDecayPerSecond *= .02f; // hopefully accounts for FixedUpdate frequency
+            TryRestorePersistedState();
+        }
+
+        // Persists latest state before this scene unloads.
+        private void OnDisable()
+        {
+            SavePersistedState();
+        }
+
+        // Persists latest state on destroy as a fallback path.
+        private void OnDestroy()
+        {
+            SavePersistedState();
         }
 
         private void FixedUpdate()
         {
             if (currentWater > 0)
             {
-                currentWater -= waterDecayPerSecond;
+                currentWater = Mathf.Max(0f, currentWater - waterDecayPerSecond);
             }
         }
 
@@ -100,7 +120,7 @@ namespace Farming
                 case FarmTile.Condition.Harvestable:
                 {
                     HarvestPlant(); // Runs regardless of whether plant can regrow fruit
-                    if (!currentPlant.RegrowsFruit) // Only remove plant if it can't regrow
+                    if (currentPlant == null || !currentPlant.RegrowsFruit) // Only remove plant if it can't regrow
                     {
                         ClearPlant();
                         Till();
@@ -108,6 +128,7 @@ namespace Farming
                 } break;
             }
             daysSinceLastInteraction = 0;
+            SavePersistedState();
             FarmWinController.NotifyTileStatePotentiallyChanged();
             EvaluateAllTilesRewardFallback();
         }
@@ -141,22 +162,19 @@ namespace Farming
         {
             return currentWater;
         }
-        private void SetNoWater()
-        {
-            currentWater = 0f;
-        }
-
         // TODO: Check if we need to destroy plantObj at any point
         GameObject plantObj;
 
         // Spawns plant prefab and transitions tile into planted state.
         private void PlantSeed()
         {
-            if (currentPlant != null) return;
+            if (currentPlant != null)
+                return;
 
-            plantObj = Instantiate(plantPrefab, transform.position, Quaternion.identity);
-            currentPlant = plantObj.GetComponent<Plant>();
-            currentPlant.SetParentTile(this);
+            EnsurePlantExists();
+            if (currentPlant == null)
+                return;
+
             tileCondition = Condition.Planted;
             plantObj.SetActive(true);
             Debug.Log("Plant active? " + plantObj.activeInHierarchy);
@@ -176,10 +194,28 @@ namespace Farming
         // Clears existing plant and resets tile to grass state.
         private void ClearPlant()
         {
-            Destroy(currentPlant.gameObject);
+            if (currentPlant != null)
+                Destroy(currentPlant.gameObject);
+
             currentPlant = null;
+            plantObj = null;
             tileCondition = Condition.Grass;
             UpdateVisual();
+        }
+
+        // Ensures a runtime plant instance exists and is parented to this tile.
+        private void EnsurePlantExists()
+        {
+            if (currentPlant != null)
+                return;
+
+            if (plantPrefab == null)
+                return;
+
+            plantObj = Instantiate(plantPrefab, transform.position, Quaternion.identity);
+            currentPlant = plantObj.GetComponent<Plant>();
+            if (currentPlant != null)
+                currentPlant.SetParentTile(this);
         }
 
         // Applies material based on current tile condition.
@@ -214,6 +250,12 @@ namespace Farming
         // Day tick handler for decay/wither behavior and win-state refresh.
         public void OnDayPassed()
         {
+            ApplyDayPassedLogic(true);
+        }
+
+        // Applies one full day-tick of tile decay/wither behavior.
+        private void ApplyDayPassedLogic(bool persistState)
+        {
             Condition previousCondition = tileCondition;
             daysSinceLastInteraction++;
             if (tileCondition == Condition.Planted && currentPlant != null)
@@ -236,6 +278,189 @@ namespace Farming
                 FarmWinController.NotifyTileStatePotentiallyChanged();
                 EvaluateAllTilesRewardFallback();
             }
+
+            if (persistState)
+                SavePersistedState();
+        }
+
+        // Serializes current tile/plant state into the cross-scene farm cache.
+        private void SavePersistedState()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (string.IsNullOrWhiteSpace(persistenceKey))
+                persistenceKey = BuildPersistenceKey();
+
+            FarmSceneStateStore.FarmTileSnapshot snapshot = new FarmSceneStateStore.FarmTileSnapshot
+            {
+                TileCondition = tileCondition,
+                WaterAmount = Mathf.Max(0f, currentWater),
+                DaysSinceLastInteraction = Mathf.Max(0, daysSinceLastInteraction),
+                HasPlant = currentPlant != null,
+                PlantState = currentPlant != null ? currentPlant.CurrentState : PlantState.Planted,
+                PlantGrowTimer = currentPlant != null ? currentPlant.GetGrowTimer() : 0f,
+                SavedAtRealtimeSeconds = Time.realtimeSinceStartup
+            };
+
+            FarmSceneStateStore.SaveTileState(persistenceKey, snapshot);
+        }
+
+        // Restores persisted state and advances simulation by elapsed off-scene time.
+        private void TryRestorePersistedState()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (string.IsNullOrWhiteSpace(persistenceKey))
+                persistenceKey = BuildPersistenceKey();
+
+            if (!FarmSceneStateStore.TryGetTileState(persistenceKey, out FarmSceneStateStore.FarmTileSnapshot snapshot))
+                return;
+
+            ApplySnapshot(snapshot);
+
+            float elapsedSeconds = Mathf.Max(0f, Time.realtimeSinceStartup - snapshot.SavedAtRealtimeSeconds);
+            if (elapsedSeconds > 0f)
+                SimulateElapsedOffSceneTime(elapsedSeconds);
+
+            SavePersistedState();
+        }
+
+        // Applies a snapshot without elapsed-time simulation.
+        private void ApplySnapshot(FarmSceneStateStore.FarmTileSnapshot snapshot)
+        {
+            tileCondition = snapshot.TileCondition;
+            currentWater = Mathf.Max(0f, snapshot.WaterAmount);
+            daysSinceLastInteraction = Mathf.Max(0, snapshot.DaysSinceLastInteraction);
+
+            bool shouldHavePlant = snapshot.HasPlant || tileCondition == Condition.Planted || tileCondition == Condition.Harvestable;
+            if (shouldHavePlant)
+            {
+                EnsurePlantExists();
+                if (currentPlant != null)
+                {
+                    currentPlant.SetParentTile(this);
+                    currentPlant.RestoreFromSnapshot(snapshot.PlantState, snapshot.PlantGrowTimer);
+                }
+            }
+            else if (currentPlant != null)
+            {
+                Destroy(currentPlant.gameObject);
+                currentPlant = null;
+                plantObj = null;
+            }
+
+            UpdateVisual();
+            FarmWinController.NotifyTileStatePotentiallyChanged();
+        }
+
+        // Simulates growth/decay while this tile's scene was unloaded.
+        private void SimulateElapsedOffSceneTime(float elapsedSeconds)
+        {
+            float waterDecayRatePerSecond = GetWaterDecayRatePerSecond();
+            float initialWater = currentWater;
+            float finalWater = Mathf.Max(0f, initialWater - (waterDecayRatePerSecond * elapsedSeconds));
+            currentWater = finalWater;
+
+            int elapsedWholeDays = Mathf.FloorToInt(elapsedSeconds / Mathf.Max(1f, DayController.RuntimeDayLengthSeconds));
+            if (elapsedWholeDays > 0)
+            {
+                for (int i = 0; i < elapsedWholeDays; i++)
+                    ApplyDayPassedLogic(false);
+            }
+
+            if (currentPlant == null)
+                return;
+
+            PlantState state = currentPlant.CurrentState;
+            float growTimer = currentPlant.GetGrowTimer();
+
+            if (state != PlantState.Mature && state != PlantState.Withered)
+            {
+                float timeUntilWitherSeconds;
+                if (initialWater <= WitherWaterThreshold)
+                {
+                    timeUntilWitherSeconds = 0f;
+                }
+                else if (waterDecayRatePerSecond <= 0f)
+                {
+                    timeUntilWitherSeconds = float.PositiveInfinity;
+                }
+                else
+                {
+                    timeUntilWitherSeconds = (initialWater - WitherWaterThreshold) / waterDecayRatePerSecond;
+                }
+
+                float growthSimulationWindow = Mathf.Min(elapsedSeconds, Mathf.Max(0f, timeUntilWitherSeconds));
+                float growthWindowSeconds = GetDurationAtOrAboveWaterThreshold(
+                    initialWater,
+                    waterDecayRatePerSecond,
+                    currentPlant.WaterNeededToGrow,
+                    growthSimulationWindow);
+
+                growTimer += Mathf.Max(0f, growthWindowSeconds);
+
+                if (state == PlantState.Planted && growTimer >= Plant.SproutTimerSeconds)
+                    state = PlantState.Growing;
+
+                if (state == PlantState.Growing && growTimer >= currentPlant.GrowTimeSeconds)
+                {
+                    state = PlantState.Mature;
+                    tileCondition = Condition.Harvestable;
+                    growTimer = 0f;
+                }
+                else if (timeUntilWitherSeconds <= elapsedSeconds)
+                {
+                    state = PlantState.Withered;
+                }
+            }
+
+            currentPlant.RestoreFromSnapshot(state, growTimer);
+            if (state == PlantState.Mature)
+                tileCondition = Condition.Harvestable;
+
+            UpdateVisual();
+            FarmWinController.NotifyTileStatePotentiallyChanged();
+        }
+
+        // Computes how long water stayed above a threshold while decaying linearly.
+        private static float GetDurationAtOrAboveWaterThreshold(
+            float initialWater,
+            float decayRatePerSecond,
+            float threshold,
+            float maxDurationSeconds)
+        {
+            if (maxDurationSeconds <= 0f)
+                return 0f;
+
+            if (initialWater < threshold)
+                return 0f;
+
+            if (decayRatePerSecond <= 0f)
+                return maxDurationSeconds;
+
+            float secondsUntilDropBelowThreshold = (initialWater - threshold) / decayRatePerSecond;
+            return Mathf.Clamp(secondsUntilDropBelowThreshold, 0f, maxDurationSeconds);
+        }
+
+        // Converts per-fixed-step decay back into per-second decay rate.
+        private float GetWaterDecayRatePerSecond()
+        {
+            float fixedStep = Mathf.Max(0.001f, Time.fixedDeltaTime);
+            return waterDecayPerSecond / fixedStep;
+        }
+
+        // Builds a deterministic runtime key for this tile in its scene.
+        private string BuildPersistenceKey()
+        {
+            Scene scene = gameObject.scene;
+            string sceneName = scene.IsValid() ? scene.name : "UnknownScene";
+            Vector3 position = transform.position;
+            int x = Mathf.RoundToInt(position.x * 100f);
+            int y = Mathf.RoundToInt(position.y * 100f);
+            int z = Mathf.RoundToInt(position.z * 100f);
+            return sceneName + "|" + gameObject.name + "|" + x + "," + y + "," + z;
         }
 
         // Legacy fallback reward evaluation when all non-purchase tiles are watered.

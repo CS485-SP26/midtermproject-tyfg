@@ -31,6 +31,8 @@ public enum PlantState
 
 public class Plant : MonoBehaviour
 {
+    public const float SproutTimerSeconds = 5f;
+
     [Header("Growth Settings")]
     // Water threshold required to transition from Planted -> Growing.
     [SerializeField] private float waterNeededToGrow = 5f;
@@ -38,6 +40,8 @@ public class Plant : MonoBehaviour
     [SerializeField] private float growTime = 10f;
     // Whether the plant continues to produce fruit after first harvest
     [SerializeField] private bool regrowsFruit = false;
+    public float WaterNeededToGrow => waterNeededToGrow;
+    public float GrowTimeSeconds => growTime;
     public bool RegrowsFruit
     {
         get { return regrowsFruit; }
@@ -61,18 +65,29 @@ public class Plant : MonoBehaviour
 
 
     // Runtime growth timer.
-     [SerializeField] private float growTimer = 0f;
+    [SerializeField] private float growTimer = 0f;
 
     // Reference to parent FarmTile
     private FarmTile Tile;
+    // True when state/timer were restored before Start().
+    private bool restoredFromSnapshot;
 
     // Initializes plant in newly planted state.
     private void Start()
     {
         SetModelsInactive();
-        SetState(PlantState.Planted);
-        growTimer = 0f;
-        Debug.Log("Plant's parent tile: " + Tile.ToString());
+        if (!restoredFromSnapshot)
+        {
+            SetState(PlantState.Planted);
+            growTimer = 0f;
+        }
+        else
+        {
+            UpdateVisuals();
+        }
+
+        if (Tile != null)
+            Debug.Log("Plant's parent tile: " + Tile.name);
     }
 
     private void SetModelsInactive()
@@ -108,7 +123,7 @@ public class Plant : MonoBehaviour
         if (Tile.GetWater() >= waterNeededToGrow)
         {
             // Plant will "sprout" when growTimer reaches 5. (arbitrary)
-            if (growTimer >= 5f && CurrentState == PlantState.Planted)
+            if (growTimer >= SproutTimerSeconds && CurrentState == PlantState.Planted)
             {
                 SetState(PlantState.Growing);
             }
@@ -131,6 +146,22 @@ public class Plant : MonoBehaviour
     public void ResetToDirt()
     {
         Destroy(gameObject);
+    }
+
+    // Returns current grow timer for persistence snapshots.
+    public float GetGrowTimer()
+    {
+        return growTimer;
+    }
+
+    // Restores state/timer from persistence snapshot before gameplay resumes.
+    public void RestoreFromSnapshot(PlantState state, float restoredGrowTimer)
+    {
+        restoredFromSnapshot = true;
+        growTimer = Mathf.Max(0f, restoredGrowTimer);
+        GrowTimeLeft = Mathf.Max(0f, growTime - growTimer);
+        SetModelsInactive();
+        SetState(state);
     }
 
     // Sets current state and refreshes active visual model.

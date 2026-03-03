@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Farming;
 
 /*
 * The GameManager is a singleton that manages game-wide state, including:
@@ -32,7 +33,7 @@ namespace Core
         [Header("Starting Data")]
         // Initial values used when the session starts or resets.
         [SerializeField] private int startingFunds = 0;
-        [SerializeField] private int startingSeeds = 15;
+        [SerializeField] private int startingSeeds = 0;
         [SerializeField] private int startingPlants = 0;
         [SerializeField] private int startingSkillPoints = 0;
 
@@ -201,6 +202,7 @@ namespace Core
         {
             InitializeResourceBalances();
             progressFlags.Clear();
+            FarmSceneStateStore.ClearAll();
 
             NotifyAllResourceChanged();
         }

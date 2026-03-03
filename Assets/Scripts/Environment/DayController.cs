@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro; // Important for TextMeshPro
 using UnityEngine.Events;
-using Farming;
 
 /*
 * This script manages the day-night cycle in the game. It tracks the passage of time, updates the sun's position, and triggers events at the end of each day.
@@ -19,11 +18,18 @@ namespace Environment
 {
     public class DayController : MonoBehaviour
     {
+        // Shared runtime day-length for off-scene simulation catch-up.
+        public static float RuntimeDayLengthSeconds { get; private set; } = 60f;
+        private static int runtimeCurrentDay = 1;
+        private static float runtimeDayProgressSeconds = 0f;
+        private static float runtimeLastRealtimeSeconds = -1f;
+
         [Header("Object References")]
         // Directional light used as sun for day/night visuals.
         [SerializeField] private Light sunLight;
         // UI label showing current day.
         [SerializeField] private TMP_Text dayLabel;
+        [SerializeField] private string dayLabelObjectName = "DayLabel";
         
         [Header("Time Constraints")]
         // Length of a full day cycle in real seconds.
@@ -41,29 +47,51 @@ namespace Environment
         // Invoked each time a day completes and rolls over.
         public UnityEvent dayPassedEvent = new UnityEvent();
 
+        // Resets static runtime day state when play-mode/runtime subsystem resets.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetRuntimeState()
+        {
+            RuntimeDayLengthSeconds = 60f;
+            runtimeCurrentDay = 1;
+            runtimeDayProgressSeconds = 0f;
+            runtimeLastRealtimeSeconds = -1f;
+        }
+
         // Initializes day label text on startup.
         private void Start()
         {
-            if (dayLabel != null)
-                dayLabel.SetText("Days: {0}", currentDay);
+            RuntimeDayLengthSeconds = Mathf.Max(1f, dayLengthSeconds);
+            SyncFromRuntimeWithCatchUp();
+            ResolveDayLabelIfNeeded();
+            UpdateDayLabel();
+        }
+
+        // Saves current runtime day snapshot when this controller is disabled.
+        private void OnDisable()
+        {
+            SyncRuntimeFromLocal();
+        }
+
+        // Saves current runtime day snapshot when this controller is destroyed.
+        private void OnDestroy()
+        {
+            SyncRuntimeFromLocal();
         }
 
         // Advances to next day, resets progress, updates label, and notifies listeners.
         public void AdvanceDay()
         {
             Debug.Assert(sunLight, "DayController requires a 'Sun'");
+            ResolveDayLabelIfNeeded();
             if (dayLabel == null) Debug.Log("DayController does not have a label to update");
 
             dayProgressSeconds = 0f; // Reset to start a new day.
             currentDay++;
             
-            if (dayLabel)
-            {
-                // Avoid string-concat GC churn by using SetText formatting.
-                dayLabel.SetText("Days: {0}", currentDay);                
-            }
+            UpdateDayLabel();
 
             dayPassedEvent.Invoke(); // Make announcement to all listeners.
+            SyncRuntimeFromLocal();
         }
 
         // Applies visual changes (sun rotation) based on current day progress.
@@ -84,14 +112,80 @@ namespace Environment
         // Advances day timer and updates visuals every frame.
         void Update()
         {
+            RuntimeDayLengthSeconds = Mathf.Max(1f, dayLengthSeconds);
             dayProgressSeconds += Time.deltaTime;
+            ResolveDayLabelIfNeeded();
+            UpdateDayLabel();
 
-            if (dayProgressSeconds >= dayLengthSeconds)
+            while (dayProgressSeconds >= dayLengthSeconds)
             {
                 AdvanceDay();
             }
 
             UpdateVisuals();
+            SyncRuntimeFromLocal();
+        }
+
+        // Applies elapsed real-time catch-up to day counter/progress.
+        private void SyncFromRuntimeWithCatchUp()
+        {
+            float effectiveDayLength = Mathf.Max(1f, dayLengthSeconds);
+            RuntimeDayLengthSeconds = effectiveDayLength;
+
+            float now = Time.realtimeSinceStartup;
+            if (runtimeLastRealtimeSeconds < 0f)
+            {
+                runtimeCurrentDay = Mathf.Max(1, currentDay);
+                runtimeDayProgressSeconds = Mathf.Clamp(dayProgressSeconds, 0f, effectiveDayLength);
+            }
+            else
+            {
+                float elapsed = Mathf.Max(0f, now - runtimeLastRealtimeSeconds);
+                float totalProgress = runtimeDayProgressSeconds + elapsed;
+                int elapsedDays = Mathf.FloorToInt(totalProgress / effectiveDayLength);
+                runtimeCurrentDay = Mathf.Max(1, runtimeCurrentDay + elapsedDays);
+                runtimeDayProgressSeconds = totalProgress - (elapsedDays * effectiveDayLength);
+            }
+
+            runtimeLastRealtimeSeconds = now;
+            currentDay = runtimeCurrentDay;
+            dayProgressSeconds = runtimeDayProgressSeconds;
+        }
+
+        // Writes local day counter/progress to shared runtime snapshot.
+        private void SyncRuntimeFromLocal()
+        {
+            RuntimeDayLengthSeconds = Mathf.Max(1f, dayLengthSeconds);
+            runtimeCurrentDay = Mathf.Max(1, currentDay);
+            runtimeDayProgressSeconds = Mathf.Clamp(dayProgressSeconds, 0f, RuntimeDayLengthSeconds);
+            runtimeLastRealtimeSeconds = Time.realtimeSinceStartup;
+        }
+
+        // Updates the day counter label text if a label is available.
+        private void UpdateDayLabel()
+        {
+            if (dayLabel != null)
+                dayLabel.SetText("Days: {0}", currentDay);
+        }
+
+        // Attempts to resolve a valid day label when scene references were moved/replaced.
+        private void ResolveDayLabelIfNeeded()
+        {
+            if (dayLabel != null)
+                return;
+
+            TMP_Text[] labels = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
+            foreach (TMP_Text label in labels)
+            {
+                if (label == null)
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(dayLabelObjectName) && label.name == dayLabelObjectName)
+                {
+                    dayLabel = label;
+                    return;
+                }
+            }
         }
     }
 }
