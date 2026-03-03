@@ -35,15 +35,18 @@ namespace Core
         [SerializeField] private int startingSeeds = 15;
         [SerializeField] private int startingSkillPoints = 0;
 
+        [SerializeField] private int startingPlants = 0;
         // Convenience read-only properties for common resource lookups.
         public int Funds => GetResourceAmount(EconomyResource.Funds);
         public int Seeds => GetResourceAmount(EconomyResource.Seeds);
         public int SkillPoints => GetResourceAmount(EconomyResource.SkillPoints);
+        public int Plants => GetResourceAmount(EconomyResource.Plants);
 
         // Resource-specific events for scripts that only care about one value.
         public event Action<int> FundsChanged;
         public event Action<int> SeedsChanged;
         public event Action<int> SkillPointsChanged;
+        public event Action<int> PlantsChanged;
         // Other scripts can subscribe to this resource-change event to update UI or trigger other effects.
         public event Action<EconomyResource, int> ResourceChanged;
 

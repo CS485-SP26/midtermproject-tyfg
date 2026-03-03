@@ -19,6 +19,9 @@ namespace Core
         // Seed inventory used for planting/purchase flows.
         Seeds = 1,
         // Upgrade currency for skill systems.
-        SkillPoints = 2
+        SkillPoints = 2,
+
+        //plants held
+        Plants = 3
     }
 }
