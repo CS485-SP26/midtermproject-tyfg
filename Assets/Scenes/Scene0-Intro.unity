@@ -385,7 +385,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
   startingFunds: 100
-  startingSeeds: 0
+  startingSeeds: 15
+  startingSkillPoints: 0
+  startingPlants: 0
 --- !u!4 &621266011
 Transform:
   m_ObjectHideFlags: 0
