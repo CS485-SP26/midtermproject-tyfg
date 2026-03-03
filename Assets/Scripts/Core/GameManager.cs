@@ -33,9 +33,10 @@ namespace Core
         // Initial values used when the session starts or resets.
         [SerializeField] private int startingFunds = 0;
         [SerializeField] private int startingSeeds = 15;
+        [SerializeField] private int startingPlants = 0;
         [SerializeField] private int startingSkillPoints = 0;
 
-        [SerializeField] private int startingPlants = 0;
+        
         // Convenience read-only properties for common resource lookups.
         public int Funds => GetResourceAmount(EconomyResource.Funds);
         public int Seeds => GetResourceAmount(EconomyResource.Seeds);
@@ -205,10 +206,11 @@ namespace Core
         }
 
         // Updates starting values, then performs a full session reset.
-        public void ResetSessionData(int funds, int seeds, int skillPoints)
+        public void ResetSessionData(int funds, int seeds, int plants, int skillPoints)
         {
             startingFunds = Mathf.Max(0, funds);
             startingSeeds = Mathf.Max(0, seeds);
+            startingPlants = Mathf.Max(0, plants);
             startingSkillPoints = Mathf.Max(0, skillPoints);
             ResetSessionData();
         }
@@ -244,6 +246,7 @@ namespace Core
         {
             NotifyResourceChanged(EconomyResource.Funds, Funds);
             NotifyResourceChanged(EconomyResource.Seeds, Seeds);
+            NotifyResourceChanged(EconomyResource.Plants, Plants);
             NotifyResourceChanged(EconomyResource.SkillPoints, SkillPoints);
         }
 
@@ -319,6 +322,7 @@ namespace Core
         // Optional one-time session data applied from older scene bootstrap usage.
         [SerializeField] private int startingFunds = 0;
         [SerializeField] private int startingSeeds = 0;
+        [SerializeField] private int startingPlants = 0;
         [SerializeField] private int startingSkillPoints = 0;
         [SerializeField] private bool applyStartingDataOnFirstAwake = true;
 
@@ -340,7 +344,7 @@ namespace Core
 
             GameManager manager = GameManager.Instance;
             if (manager != null)
-                manager.ResetSessionData(startingFunds, startingSeeds, startingSkillPoints);
+                manager.ResetSessionData(startingFunds, startingSeeds, startingPlants, startingSkillPoints);
 
             hasAppliedStartingData = true;
         }

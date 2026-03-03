@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using System;
 
 public class CurrencyTextUI : MonoBehaviour
 {
@@ -12,10 +13,13 @@ public class CurrencyTextUI : MonoBehaviour
     [Header("Label Targets")]
     [SerializeField] private TMP_Text fundsText;
     [SerializeField] private TMP_Text seedsText;
+    [SerializeField] private TMP_Text plantsText;
 
     [Header("Labels")]
     [SerializeField] private string fundsLabel = "Funds: $";
     [SerializeField] private string seedsLabel = "Seeds:";
+    [SerializeField] private string plantsLabel = "Plants:";
+
 
     [Header("Auto-Bind Names")]
     [SerializeField] private string fundsObjectName = "FundAmount";
@@ -34,6 +38,7 @@ public class CurrencyTextUI : MonoBehaviour
     private GameManager gameManager;
     private int lastRenderedFunds = int.MinValue;
     private int lastRenderedSeeds = int.MinValue;
+    private int lastRenderedPlants = int.MinValue;
     private bool fundsTextWasAutoCreated;
 
     // Registers scene callbacks and ensures one CurrencyTextUI exists per active scene.
@@ -103,7 +108,10 @@ public class CurrencyTextUI : MonoBehaviour
 
         gameManager.FundsChanged -= HandleFundsChanged;
         gameManager.SeedsChanged -= HandleSeedsChanged;
+        gameManager.PlantsChanged -= HandlePlantsChanged;
     }
+
+    
 
     // Rebinds HUD references and values after each scene load.
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -156,6 +164,14 @@ public class CurrencyTextUI : MonoBehaviour
     {
         UpdateSeedsText(seeds);
     }
+    
+    // GameManager plants event handler.
+    private void HandlePlantsChanged(int plants)
+    {
+        UpdatePlantsText(plants);
+    }
+
+    
 
     // Refreshes both funds and seeds labels from current GameManager values.
     private void RefreshAll()
@@ -189,6 +205,17 @@ public class CurrencyTextUI : MonoBehaviour
             seedsText.text = $"{seedsLabel} {seeds}";
 
         lastRenderedSeeds = seeds;
+    }
+
+    private void UpdatePlantsText(int plants)
+    {
+        if (plantsText == null)
+            AutoBindTextTargets();
+
+        if (plantsText != null)
+            plantsText.text = $"{plantsLabel} {plants}";
+
+        lastRenderedPlants = plants;
     }
 
     // Binds/creates HUD text targets for funds and seeds labels.
