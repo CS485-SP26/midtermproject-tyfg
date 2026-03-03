@@ -22,6 +22,6 @@ namespace Core
         SkillPoints = 2,
 
         //plants held
-        Plants = 3
+        Plants = 0
     }
 }
