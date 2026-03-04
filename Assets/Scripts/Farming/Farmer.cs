@@ -264,6 +264,13 @@ public class Farmer : MonoBehaviour
                 tile.Interact();
                 break;
             case FarmTile.Condition.Planted:
+                if (!TryConsumeWater(waterPerUse))
+                {
+                    ShowActionBlockedFeedback(lowWaterMessage);
+                    return;
+                }
+
+                animatedController.SetTrigger("Water");
                 Debug.Log("Watering planted tile.");
                 tile.Interact();
                 break;

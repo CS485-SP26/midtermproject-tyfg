@@ -1,16 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using Environment;
 
 /*
-* This class manages the farm tiles in the game. It is responsible for instantiating the grid of farm tiles based on specified rows and columns, 
-    and it listens for day passed events to update the state of all farm tiles accordingly.
+* This class manages farm tile grid creation/validation in the scene.
 * Exposes:
-*   - OnDayPassed(): A method that should be called when a day passes in the game, which will update the state of all farm tiles.
+*   - Editor/runtime tile cache refresh and grid instantiation utilities.
 * Requires:
 *   - A prefab for the farm tile that can be instantiated to create the grid.
-*   - A reference to the DayController to subscribe to day passed events.
 */
 
 namespace Farming
@@ -19,8 +16,6 @@ namespace Farming
     {
         // Prefab used to generate each farm tile instance.
         [SerializeField] private GameObject farmTilePrefab;
-        // Day system event source that advances tile state each day.
-        [SerializeField] DayController dayController;
         // Grid dimensions.
         [SerializeField] private int rows = 4;
         [SerializeField] private int cols = 4;
@@ -33,7 +28,6 @@ namespace Farming
         void Start()
         {
             Debug.Assert(farmTilePrefab, "FarmTileManager requires a farmTilePrefab");
-            Debug.Assert(dayController, "FarmTileManager requires a dayController");
             RefreshTileCache();
         }
 
@@ -41,37 +35,6 @@ namespace Farming
         void OnEnable()
         {
             RefreshTileCache();
-            if (dayController != null)
-                dayController.dayPassedEvent.AddListener(this.OnDayPassed);
-        }
-
-        // Unsubscribes tile day-advance handler when disabled.
-        void OnDisable()
-        {
-            if (dayController != null)
-                dayController.dayPassedEvent.RemoveListener(this.OnDayPassed);
-        }
-
-        // UnityEvent callback for one-day progression.
-        public void OnDayPassed()
-        {
-            IncrementDays(1);
-        }
-
-        // Advances every tile by the requested number of in-game days.
-        public void IncrementDays(int count)
-        {
-            if (tiles.Count == 0)
-                RefreshTileCache();
-
-            while (count > 0)
-            {
-                foreach (FarmTile farmTile in tiles)
-                {
-                    farmTile.OnDayPassed();
-                }
-                count--;
-            }
         }
 
         // Rebuilds runtime tile cache from this scene.

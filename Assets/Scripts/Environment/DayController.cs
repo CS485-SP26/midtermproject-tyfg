@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro; // Important for TextMeshPro
 using UnityEngine.Events;
+using System;
 
 /*
 * This script manages the day-night cycle in the game. It tracks the passage of time, updates the sun's position, and triggers events at the end of each day.
@@ -20,6 +21,8 @@ namespace Environment
     {
         // Shared runtime day-length for off-scene simulation catch-up.
         public static float RuntimeDayLengthSeconds { get; private set; } = 60f;
+        public static int RuntimeCurrentDay => runtimeCurrentDay;
+        public static event Action<int> DayAdvanced;
         private static int runtimeCurrentDay = 1;
         private static float runtimeDayProgressSeconds = 0f;
         private static float runtimeLastRealtimeSeconds = -1f;
@@ -91,6 +94,7 @@ namespace Environment
             UpdateDayLabel();
 
             dayPassedEvent.Invoke(); // Make announcement to all listeners.
+            DayAdvanced?.Invoke(currentDay);
             SyncRuntimeFromLocal();
         }
 

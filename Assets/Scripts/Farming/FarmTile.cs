@@ -25,7 +25,6 @@ namespace Farming
     public class FarmTile : MonoBehaviour
     {
         private const int FallbackAllTilesRewardFunds = 25;
-        private const float WitherWaterThreshold = 0.1f;
 
         public enum Condition { Grass, Tilled, Watered, Planted, Harvestable }
 
@@ -39,6 +38,7 @@ namespace Farming
         
         [Header("Data")]
         private float waterAmount = 5f;
+        [SerializeField] private bool clearWitheredPlantOnDayPassed = false;
 
         [Header("Visuals")]
         [SerializeField] private Material grassMaterial;
@@ -91,13 +91,22 @@ namespace Farming
         // Persists latest state before this scene unloads.
         private void OnDisable()
         {
+            DayController.DayAdvanced -= HandleDayAdvanced;
             SavePersistedState();
         }
 
         // Persists latest state on destroy as a fallback path.
         private void OnDestroy()
         {
+            DayController.DayAdvanced -= HandleDayAdvanced;
             SavePersistedState();
+        }
+
+        // Subscribes to global day advancement so tiles update even without FarmTileManager hooks.
+        private void OnEnable()
+        {
+            DayController.DayAdvanced -= HandleDayAdvanced;
+            DayController.DayAdvanced += HandleDayAdvanced;
         }
 
         private void FixedUpdate()
@@ -105,6 +114,8 @@ namespace Farming
             if (currentWater > 0)
             {
                 currentWater = Mathf.Max(0f, currentWater - waterDecayPerSecond);
+                if (tileCondition == Condition.Planted || tileCondition == Condition.Harvestable)
+                    UpdateVisual();
             }
         }
 
@@ -116,7 +127,18 @@ namespace Farming
                 case FarmTile.Condition.Grass: Till(); break;
                 case FarmTile.Condition.Tilled: Water(); break;
                 case FarmTile.Condition.Watered: PlantSeed(); break;
-                case FarmTile.Condition.Planted: Water(); break;
+                case FarmTile.Condition.Planted:
+                {
+                    // Let the player clear dead crops manually instead of auto-clearing on day tick.
+                    if (currentPlant != null && currentPlant.CurrentState == PlantState.Withered)
+                    {
+                        ClearPlant();
+                        Till();
+                        break;
+                    }
+
+                    Water();
+                } break;
                 case FarmTile.Condition.Harvestable:
                 {
                     HarvestPlant(); // Runs regardless of whether plant can regrow fruit
@@ -154,6 +176,8 @@ namespace Farming
             }
 
             currentWater += waterAmount;
+            if (tileCondition == Condition.Planted || tileCondition == Condition.Harvestable)
+                UpdateVisual();
             waterAudio?.Play();
             return;
         }
@@ -170,6 +194,10 @@ namespace Farming
         {
             if (currentPlant != null)
                 return;
+
+            // Keep newly planted soil visibly moist so it does not appear instantly dry.
+            if (currentWater <= 0.1f)
+                currentWater = waterAmount;
 
             EnsurePlantExists();
             if (currentPlant == null)
@@ -227,6 +255,10 @@ namespace Farming
                 case FarmTile.Condition.Grass: tileRenderer.material = grassMaterial; break;
                 case FarmTile.Condition.Tilled: tileRenderer.material = tilledMaterial; break;
                 case FarmTile.Condition.Watered: tileRenderer.material = wateredMaterial; break;
+                case FarmTile.Condition.Planted:
+                case FarmTile.Condition.Harvestable:
+                    tileRenderer.material = currentWater > 0.1f ? wateredMaterial : tilledMaterial;
+                    break;
             }
         }
 
@@ -253,12 +285,18 @@ namespace Farming
             ApplyDayPassedLogic(true);
         }
 
+        // Handles global day-advance event from DayController.
+        private void HandleDayAdvanced(int dayNumber)
+        {
+            ApplyDayPassedLogic(true);
+        }
+
         // Applies one full day-tick of tile decay/wither behavior.
         private void ApplyDayPassedLogic(bool persistState)
         {
             Condition previousCondition = tileCondition;
             daysSinceLastInteraction++;
-            if (tileCondition == Condition.Planted && currentPlant != null)
+            if (clearWitheredPlantOnDayPassed && tileCondition == Condition.Planted && currentPlant != null)
             {
                 if (currentPlant.CurrentState == PlantState.Withered)
                 {
@@ -300,6 +338,7 @@ namespace Farming
                 HasPlant = currentPlant != null,
                 PlantState = currentPlant != null ? currentPlant.CurrentState : PlantState.Planted,
                 PlantGrowTimer = currentPlant != null ? currentPlant.GetGrowTimer() : 0f,
+                PlantDryTimer = currentPlant != null ? currentPlant.GetDryTimer() : 0f,
                 SavedAtRealtimeSeconds = Time.realtimeSinceStartup
             };
 
@@ -341,7 +380,7 @@ namespace Farming
                 if (currentPlant != null)
                 {
                     currentPlant.SetParentTile(this);
-                    currentPlant.RestoreFromSnapshot(snapshot.PlantState, snapshot.PlantGrowTimer);
+                    currentPlant.RestoreFromSnapshot(snapshot.PlantState, snapshot.PlantGrowTimer, snapshot.PlantDryTimer);
                 }
             }
             else if (currentPlant != null)
@@ -375,29 +414,24 @@ namespace Farming
 
             PlantState state = currentPlant.CurrentState;
             float growTimer = currentPlant.GetGrowTimer();
+            float dryTimer = currentPlant.GetDryTimer();
+            float witherWaterThreshold = currentPlant.WitherWaterThreshold;
+            float dryOutGraceSeconds = Mathf.Max(0f, currentPlant.DryOutGraceSeconds);
 
             if (state != PlantState.Mature && state != PlantState.Withered)
             {
-                float timeUntilWitherSeconds;
-                if (initialWater <= WitherWaterThreshold)
-                {
-                    timeUntilWitherSeconds = 0f;
-                }
-                else if (waterDecayRatePerSecond <= 0f)
-                {
-                    timeUntilWitherSeconds = float.PositiveInfinity;
-                }
-                else
-                {
-                    timeUntilWitherSeconds = (initialWater - WitherWaterThreshold) / waterDecayRatePerSecond;
-                }
+                float dryDurationSeconds = GetDurationAtOrBelowWaterThreshold(
+                    initialWater,
+                    waterDecayRatePerSecond,
+                    witherWaterThreshold,
+                    elapsedSeconds);
+                dryTimer += Mathf.Max(0f, dryDurationSeconds);
 
-                float growthSimulationWindow = Mathf.Min(elapsedSeconds, Mathf.Max(0f, timeUntilWitherSeconds));
                 float growthWindowSeconds = GetDurationAtOrAboveWaterThreshold(
                     initialWater,
                     waterDecayRatePerSecond,
                     currentPlant.WaterNeededToGrow,
-                    growthSimulationWindow);
+                    elapsedSeconds);
 
                 growTimer += Mathf.Max(0f, growthWindowSeconds);
 
@@ -409,14 +443,15 @@ namespace Farming
                     state = PlantState.Mature;
                     tileCondition = Condition.Harvestable;
                     growTimer = 0f;
+                    dryTimer = 0f;
                 }
-                else if (timeUntilWitherSeconds <= elapsedSeconds)
+                else if (dryTimer >= dryOutGraceSeconds)
                 {
                     state = PlantState.Withered;
                 }
             }
 
-            currentPlant.RestoreFromSnapshot(state, growTimer);
+            currentPlant.RestoreFromSnapshot(state, growTimer, dryTimer);
             if (state == PlantState.Mature)
                 tileCondition = Condition.Harvestable;
 
@@ -442,6 +477,29 @@ namespace Farming
 
             float secondsUntilDropBelowThreshold = (initialWater - threshold) / decayRatePerSecond;
             return Mathf.Clamp(secondsUntilDropBelowThreshold, 0f, maxDurationSeconds);
+        }
+
+        // Computes how long water stayed at/below a threshold while decaying linearly.
+        private static float GetDurationAtOrBelowWaterThreshold(
+            float initialWater,
+            float decayRatePerSecond,
+            float threshold,
+            float maxDurationSeconds)
+        {
+            if (maxDurationSeconds <= 0f)
+                return 0f;
+
+            if (initialWater <= threshold)
+                return maxDurationSeconds;
+
+            if (decayRatePerSecond <= 0f)
+                return 0f;
+
+            float secondsUntilDropToThreshold = (initialWater - threshold) / decayRatePerSecond;
+            if (secondsUntilDropToThreshold >= maxDurationSeconds)
+                return 0f;
+
+            return maxDurationSeconds - Mathf.Max(0f, secondsUntilDropToThreshold);
         }
 
         // Converts per-fixed-step decay back into per-second decay rate.

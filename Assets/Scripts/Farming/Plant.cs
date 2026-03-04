@@ -38,10 +38,16 @@ public class Plant : MonoBehaviour
     [SerializeField] private float waterNeededToGrow = 5f;
     // Duration in Growing state before becoming Mature.
     [SerializeField] private float growTime = 10f;
+    // Water level considered "dry" for withering.
+    [SerializeField] private float witherWaterThreshold = 0.1f;
+    // How long the plant can stay dry before withering.
+    [SerializeField] private float dryOutGraceSeconds = 60f;
     // Whether the plant continues to produce fruit after first harvest
     [SerializeField] private bool regrowsFruit = false;
     public float WaterNeededToGrow => waterNeededToGrow;
     public float GrowTimeSeconds => growTime;
+    public float WitherWaterThreshold => witherWaterThreshold;
+    public float DryOutGraceSeconds => dryOutGraceSeconds;
     public bool RegrowsFruit
     {
         get { return regrowsFruit; }
@@ -66,6 +72,8 @@ public class Plant : MonoBehaviour
 
     // Runtime growth timer.
     [SerializeField] private float growTimer = 0f;
+    // Accumulated time spent at/under dry threshold.
+    [SerializeField] private float dryTimerSeconds = 0f;
 
     // Reference to parent FarmTile
     private FarmTile Tile;
@@ -80,6 +88,7 @@ public class Plant : MonoBehaviour
         {
             SetState(PlantState.Planted);
             growTimer = 0f;
+            dryTimerSeconds = 0f;
         }
         else
         {
@@ -110,17 +119,26 @@ public class Plant : MonoBehaviour
         if (CurrentState == PlantState.Withered || CurrentState == PlantState.Mature)
             return;
 
-        if (Tile.GetWater() <= 0.1f)
+        float water = Tile.GetWater();
+        if (water <= witherWaterThreshold)
         {
-            SetState(PlantState.Withered);
-            Debug.Log("A plant has withered. Water: " + Tile.GetWater());
-            return;
+            dryTimerSeconds += Time.fixedDeltaTime;
+            if (dryTimerSeconds >= dryOutGraceSeconds)
+            {
+                SetState(PlantState.Withered);
+                Debug.Log("A plant has withered. Water: " + water);
+                return;
+            }
+        }
+        else
+        {
+            dryTimerSeconds = 0f;
         }
 
         // HW6 Part 11 - Growing Plants:
 
         // Conditions necessary for plant to sprout.
-        if (Tile.GetWater() >= waterNeededToGrow)
+        if (water >= waterNeededToGrow)
         {
             // Plant will "sprout" when growTimer reaches 5. (arbitrary)
             if (growTimer >= SproutTimerSeconds && CurrentState == PlantState.Planted)
@@ -154,11 +172,18 @@ public class Plant : MonoBehaviour
         return growTimer;
     }
 
+    // Returns accumulated dry-time for persistence snapshots.
+    public float GetDryTimer()
+    {
+        return dryTimerSeconds;
+    }
+
     // Restores state/timer from persistence snapshot before gameplay resumes.
-    public void RestoreFromSnapshot(PlantState state, float restoredGrowTimer)
+    public void RestoreFromSnapshot(PlantState state, float restoredGrowTimer, float restoredDryTimer = 0f)
     {
         restoredFromSnapshot = true;
         growTimer = Mathf.Max(0f, restoredGrowTimer);
+        dryTimerSeconds = Mathf.Max(0f, restoredDryTimer);
         GrowTimeLeft = Mathf.Max(0f, growTime - growTimer);
         SetModelsInactive();
         SetState(state);

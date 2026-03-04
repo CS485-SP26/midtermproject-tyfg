@@ -14,6 +14,7 @@ namespace Farming
             public bool HasPlant;
             public PlantState PlantState;
             public float PlantGrowTimer;
+            public float PlantDryTimer;
             public float SavedAtRealtimeSeconds;
         }
 
