@@ -9,8 +9,7 @@
 - `Docs/Screenshots/` (development screenshots + short captions)
 - `Docs/Screenshots/README.md` (index of screenshots and what they show)
 
-## Live Bug Tracker (starting entries)
-
+## Live Bug Tracker (starting entries) - [ Status: Awaiting Validate Fix ]
 ### Bug: “All tiles watered” reward fails after planting
 - **Symptom:** Reward works only if every tile stays in `Watered`; planting one tile prevents reward.
 - **Check these functions:**
@@ -23,7 +22,7 @@
 - [FarmWinController.cs](c:/Cs485GameProgramming/NewMidterm/midtermproject-tyfg/Assets/Scripts/Farming/FarmWinController.cs)
 - [FarmTile.cs](c:/Cs485GameProgramming/NewMidterm/midtermproject-tyfg/Assets/Scripts/Farming/FarmTile.cs)
 
-### Bug: Store UI does not reflect day/time passing
+### Bug: Store UI does not reflect day/time passing [ Status: Empty ]
 - **Symptom:** Time appears frozen in store UI, but progresses when returning to farm.
 - **Check these functions:**
 - `DayController.Update`
@@ -36,7 +35,7 @@
 - [DayController.cs](c:/Cs485GameProgramming/NewMidterm/midtermproject-tyfg/Assets/Scripts/Environment/DayController.cs)
 - [SceneUIBootstrap.cs](c:/Cs485GameProgramming/NewMidterm/midtermproject-tyfg/Assets/Scripts/UI/SceneUIBootstrap.cs)
 
-### Bug: Energy appears paused in store, then refilled on exit
+### Bug: Energy appears paused in store, then refilled on exit [ Status: Awaiting Validate Fix ]
 - **Symptom:** Store bar looks static; on exit, energy is high/full.
 - **Check these functions:**
 - `Farmer.OnDisable`
@@ -50,7 +49,7 @@
 - [Farmer.cs](c:/Cs485GameProgramming/NewMidterm/midtermproject-tyfg/Assets/Scripts/Farming/Farmer.cs)
 - [FarmerResourceState.cs](c:/Cs485GameProgramming/NewMidterm/midtermproject-tyfg/Assets/Scripts/Farming/FarmerResourceState.cs)
 
-### Bug: Plant visuals/state mismatch (`Plant_3`, withered confusion, Turnip defaults)
+### Bug: Plant visuals/state mismatch (`Plant_3`, withered confusion, Turnip defaults) [ Status: Open ]
 - **Symptom:** Withered model and inspector values look inconsistent with expected carrot-only setup.
 - **Check these functions:**
 - `Plant.FixedUpdate`
