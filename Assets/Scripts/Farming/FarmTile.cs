@@ -3,6 +3,8 @@ using UnityEngine;
 using Core;
 using UnityEngine.SceneManagement;
 using Environment;
+using Farming;
+
 
 /*
 * This class represents a single tile in the farm. It manages its own state (grass, tilled, watered, planted) and handles interactions 
@@ -122,6 +124,7 @@ namespace Farming
         // Primary interaction state machine for till/water/plant progression.
         public void Interact()
         {
+            Debug.Log("Interacted with tile in condition: " + tileCondition);
             switch(tileCondition)
             {
                 case FarmTile.Condition.Grass: Till(); break;
@@ -209,16 +212,31 @@ namespace Farming
             UpdateVisual();
         }
         
-        // TODO: Take the harvested plant object and store its data in inventory (to be implemented)
+                // TODO: Take the harvested plant object and store its data in inventory (to be implemented)
         private void HarvestPlant()
         {
-            // I think we need to store DEEP copies of relevant data from the currentPlant (the Plant component of plantObj)
-            // because currentPlant will be destroyed when harvested.
-            // Idea: consider making a data structure for storing plant data, basically separating the Plant class into 
-            // two parts, one for holding data, the other for manipulating that data. 
-            // Separation of concerns or something like that idk. I think it'd feel more organized.
+            if (currentPlant == null)
+                return;
+
+            if (currentPlant.CurrentState != PlantState.Mature)
+                return;
+
+            // Extract only needed data
+            PlantData harvestedData = currentPlant.GetHarvestData();
+
+            // Send to inventory system (future)
+        // Inventory.Instance.AddItem(harvestedData);
+        //temp fix
+        Debug.Log("Harvested: " + harvestedData.plantName + " worth " + harvestedData.sellValue + " funds.");
+        GameManager.Instance.AddFunds(harvestedData.sellValue);
+            // Remove plant from tile
+            Destroy(currentPlant.gameObject);
+            currentPlant = null;
+            tileCondition = Condition.Grass;
+
+            UpdateVisual();
         }
-        
+                
         // Clears existing plant and resets tile to grass state.
         private void ClearPlant()
         {

@@ -31,13 +31,13 @@ public enum PlantState
 
 public class Plant : MonoBehaviour
 {
-    public const float SproutTimerSeconds = 5f;
+    public const float SproutTimerSeconds = 0f;
 
     [Header("Growth Settings")]
     // Water threshold required to transition from Planted -> Growing.
     [SerializeField] private float waterNeededToGrow = 5f;
     // Duration in Growing state before becoming Mature.
-    [SerializeField] private float growTime = 10f;
+    [SerializeField] private float growTime = 1f;
     // Water level considered "dry" for withering.
     [SerializeField] private float witherWaterThreshold = 0.1f;
     // How long the plant can stay dry before withering.
@@ -79,7 +79,13 @@ public class Plant : MonoBehaviour
     private FarmTile Tile;
     // True when state/timer were restored before Start().
     private bool restoredFromSnapshot;
+    [SerializeField] private string plantName = "Turnip";
+    [SerializeField] private int sellValue = 10;
 
+    public PlantData GetHarvestData()
+    {
+        return new PlantData(plantName, sellValue, 1);
+    }   
     // Initializes plant in newly planted state.
     private void Start()
     {
@@ -148,6 +154,7 @@ public class Plant : MonoBehaviour
 
             if (CurrentState == PlantState.Growing && growTimer >= growTime)
             {
+
                 SetState(PlantState.Mature);
                 Tile.TileCondition = FarmTile.Condition.Harvestable;
                 growTimer = 0f;
