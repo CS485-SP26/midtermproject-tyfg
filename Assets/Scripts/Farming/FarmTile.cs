@@ -30,7 +30,8 @@ namespace Farming
 
         public enum Condition { Grass, Tilled, Watered, Planted, Harvestable }
 
-        [SerializeField] private Condition tileCondition = Condition.Grass; 
+        [SerializeField] private Condition tileCondition = Condition.Grass;
+        [SerializeField] private FarmTileDefinition tileDefinition;
         // Continuous water loss over time.
         [SerializeField] private float waterDecayPerSecond = 0.1f;
         [SerializeField] private GameObject plantPrefab;
@@ -65,6 +66,49 @@ namespace Farming
             {
                 tileCondition = value;
             }
+        }
+
+        public FarmTileDefinition TileDefinition => tileDefinition;
+
+        // True if this tile should participate in all-tiles-watered reward checks.
+        public bool CountsForWaterReward()
+        {
+            if (tileDefinition != null)
+                return tileDefinition.CountsForWaterReward;
+
+            // Backwards-compatible default for scenes that haven't assigned definitions yet.
+            return GetComponent<SeedPurchaseTile>() == null;
+        }
+
+        // True if tile currently qualifies as watered for reward purposes.
+        public bool IsWateredForReward()
+        {
+            if (tileCondition == Condition.Watered)
+                return true;
+
+            float threshold = tileDefinition != null ? tileDefinition.RewardWaterThreshold : 0.1f;
+            bool plantedOrHarvestable = tileCondition == Condition.Planted || tileCondition == Condition.Harvestable;
+            return plantedOrHarvestable && currentWater > threshold;
+        }
+
+        public float GetGrowthMultiplier()
+        {
+            return tileDefinition != null ? tileDefinition.GrowthMultiplier : 1f;
+        }
+
+        public bool SupportsTilling()
+        {
+            return tileDefinition == null || tileDefinition.SupportsTilling;
+        }
+
+        public bool SupportsWatering()
+        {
+            return tileDefinition == null || tileDefinition.SupportsWatering;
+        }
+
+        public bool SupportsPlanting()
+        {
+            return tileDefinition == null || tileDefinition.SupportsPlanting;
         }
 
         // Builds a stable key used to persist this tile's runtime state.
@@ -115,7 +159,7 @@ namespace Farming
         {
             if (currentWater > 0)
             {
-                currentWater = Mathf.Max(0f, currentWater - waterDecayPerSecond);
+                currentWater = Mathf.Max(0f, currentWater - (waterDecayPerSecond * GetWaterDecayMultiplier()));
                 if (tileCondition == Condition.Planted || tileCondition == Condition.Harvestable)
                     UpdateVisual();
             }
@@ -161,6 +205,9 @@ namespace Farming
         // Transitions tile to tilled state and refreshes visuals/audio.
         public void Till()
         {
+            if (!SupportsTilling())
+                return;
+
             tileCondition = FarmTile.Condition.Tilled;
             UpdateVisual();
             tillAudio?.Play();
@@ -169,6 +216,9 @@ namespace Farming
         // Waters planted crop if present; otherwise waters bare tilled soil.
         public void Water()
         {
+            if (!SupportsWatering())
+                return;
+
             if (tileCondition == Condition.Grass) return; // Can't water grass
 
             // Tile condition only updates on Tilled. Prevents overwriting Planted condition.
@@ -195,6 +245,9 @@ namespace Farming
         // Spawns plant prefab and transitions tile into planted state.
         private void PlantSeed()
         {
+            if (!SupportsPlanting())
+                return;
+
             if (currentPlant != null)
                 return;
 
@@ -451,7 +504,7 @@ namespace Farming
                     currentPlant.WaterNeededToGrow,
                     elapsedSeconds);
 
-                growTimer += Mathf.Max(0f, growthWindowSeconds);
+                growTimer += Mathf.Max(0f, growthWindowSeconds) * GetGrowthMultiplier();
 
                 if (state == PlantState.Planted && growTimer >= Plant.SproutTimerSeconds)
                     state = PlantState.Growing;
@@ -524,7 +577,12 @@ namespace Farming
         private float GetWaterDecayRatePerSecond()
         {
             float fixedStep = Mathf.Max(0.001f, Time.fixedDeltaTime);
-            return waterDecayPerSecond / fixedStep;
+            return (waterDecayPerSecond * GetWaterDecayMultiplier()) / fixedStep;
+        }
+
+        private float GetWaterDecayMultiplier()
+        {
+            return tileDefinition != null ? tileDefinition.WaterDecayMultiplier : 1f;
         }
 
         // Builds a deterministic runtime key for this tile in its scene.
@@ -553,11 +611,11 @@ namespace Farming
                 if (tile == null)
                     continue;
 
-                if (tile.GetComponent<SeedPurchaseTile>() != null)
+                if (!tile.CountsForWaterReward())
                     continue;
 
                 foundAnyFarmableTile = true;
-                if (tile.TileCondition != FarmTile.Condition.Watered)
+                if (!tile.IsWateredForReward())
                 {
                     allWatered = false;
                     break;

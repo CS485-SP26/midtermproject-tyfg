@@ -97,7 +97,7 @@ namespace Farming
             }
         }
 
-        // Returns true when every non-purchase tile is in Watered state.
+        // Returns true when every reward-eligible tile is currently watered.
         private bool AreAllTilesWatered()
         {
             if (farmTiles == null || farmTiles.Length == 0)
@@ -109,11 +109,11 @@ namespace Farming
                 if (tile == null)
                     continue;
 
-                if (tile.GetComponent<SeedPurchaseTile>() != null)
+                if (!tile.CountsForWaterReward())
                     continue;
 
                 foundAnyFarmableTile = true;
-                if (tile.TileCondition != FarmTile.Condition.Watered)
+                if (!tile.IsWateredForReward())
                     return false;
             }
 

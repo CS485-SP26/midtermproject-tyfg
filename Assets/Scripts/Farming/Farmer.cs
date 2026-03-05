@@ -233,6 +233,9 @@ public class Farmer : MonoBehaviour
         switch (tile.TileCondition)
         {
             case FarmTile.Condition.Grass:
+                if (!tile.SupportsTilling())
+                    return;
+
                 if (!TryConsumeEnergy(tillEnergyCost))
                 {
                     ShowActionBlockedFeedback(lowEnergyMessage);
@@ -244,6 +247,9 @@ public class Farmer : MonoBehaviour
                 break;
 
             case FarmTile.Condition.Tilled:
+                if (!tile.SupportsWatering())
+                    return;
+
                 if (!TryConsumeWater(waterPerUse))
                 {
                     ShowActionBlockedFeedback(lowWaterMessage);
@@ -255,6 +261,9 @@ public class Farmer : MonoBehaviour
                 break;
 
             case FarmTile.Condition.Watered:
+                if (!tile.SupportsPlanting())
+                    return;
+
                 if (!TryConsumeSeeds(seedsPerPlant))
                 {
                     ShowActionBlockedFeedback(lowSeedsMessage);
@@ -265,6 +274,9 @@ public class Farmer : MonoBehaviour
                 tile.Interact();
                 break;
             case FarmTile.Condition.Planted:
+                if (!tile.SupportsWatering())
+                    return;
+
                 if (!TryConsumeWater(waterPerUse))
                 {
                     ShowActionBlockedFeedback(lowWaterMessage);
