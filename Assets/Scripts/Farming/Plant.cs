@@ -2,7 +2,7 @@ using System;
 using Farming;
 using Unity.VisualScripting;
 using UnityEngine;
-
+using Environment;
 /*
 * This class represents a plant in the farming system. It manages the plant's growth stages, water requirements, and visual representation based on its current state.
 * The plant can be watered to grow, and it will wither if it runs out of water. It also provides a method to reset the plant back to dirt, which can be called when the tile is tilled again.
@@ -82,6 +82,8 @@ public class Plant : MonoBehaviour
     [SerializeField] private string plantName = "Turnip";
     [SerializeField] private int sellValue = 10;
 
+    //to be done later: seasons that the plant can grow in
+    [SerializeField]private Season[] growSeasons;
     public PlantData GetHarvestData()
     {
         return new PlantData(plantName, sellValue, 1);
@@ -222,4 +224,17 @@ public class Plant : MonoBehaviour
     {
         Tile = farmTile;
     }
+
+    bool IsSeasonValid()    
+{
+    Season current = SeasonManager.Instance.CurrentSeason;
+
+    foreach (Season s in growSeasons)
+    {
+        if (s == current)
+            return true;
+    }
+
+    return false;
+}
 }
