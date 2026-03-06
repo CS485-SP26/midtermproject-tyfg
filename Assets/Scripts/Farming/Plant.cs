@@ -161,7 +161,8 @@ public class Plant : MonoBehaviour
                 GrowTimeLeft = 0f;
             }
 
-            growTimer += Time.fixedDeltaTime;
+            float growthMultiplier = Tile != null ? Tile.GetGrowthMultiplier() : 1f;
+            growTimer += Time.fixedDeltaTime * growthMultiplier;
             GrowTimeLeft = growTime - growTimer;
         }
         
