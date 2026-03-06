@@ -20,6 +20,7 @@ namespace Character
     {
         // Tile selection source used for farming interactions.
         [SerializeField] private TileSelector tileSelector;
+        [SerializeField] private FarmAccessGate farmAccessGate;
 
         // Cached component dependencies.
         MovementController moveController;
@@ -32,10 +33,11 @@ namespace Character
             moveController = GetComponent<MovementController>();
             animatedController = GetComponent<AnimatedController>();
             farmer = GetComponent<Farmer>();
+            if (farmAccessGate == null)
+                farmAccessGate = GetComponent<FarmAccessGate>();
             Debug.Assert(animatedController, "PlayerController requires an AnimatedController");
             Debug.Assert(moveController, "PlayerController requires a MovementController");
             Debug.Assert(tileSelector, "PlayerController requires a TileSelector.");
-            Debug.Assert(farmer, "farmer needs farming.");
         }
 
         // -------------------------
@@ -76,7 +78,16 @@ namespace Character
         // Interacts with the currently selected farm tile.
         public void OnInteract(InputValue value)
         {
+            if (value == null || !value.isPressed)
+                return;
+
             FarmTile tile = tileSelector.GetSelectedTile();
+            if (farmer == null)
+                return;
+
+            if (farmAccessGate != null && !farmAccessGate.CanFarmNow(farmer, tile))
+                return;
+
             farmer.TryTileInteraction(tile);
             Debug.Log("Interacting with tile: " + tile?.name);
         }

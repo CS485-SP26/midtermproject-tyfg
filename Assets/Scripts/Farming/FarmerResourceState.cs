@@ -27,6 +27,13 @@ using UnityEngine.SceneManagement;
 public class FarmerResourceState : MonoBehaviour
 {
     private static FarmerResourceState instance;
+    private static readonly Vector2 EnergyBarOffset = new Vector2(0f, 36f);
+    private static readonly Vector2 WaterBarOffset = new Vector2(0f, -36f);
+    private static readonly Color EnergyBarColor = new Color(1f, 0.86f, 0.2f, 1f);
+    private static readonly Color WaterBarColor = new Color(0.2f, 0.38f, 0.88f, 1f);
+    private const string EnergyLabel = "Energy";
+    private const string WaterLabel = "Water Level";
+    private const string DefaultTemplateBarName = "ProgressBar";
 
     private float maxEnergy = 100f;
     private float maxWater = 100f;
@@ -197,39 +204,41 @@ public class FarmerResourceState : MonoBehaviour
     // Resolves missing bar references from current scene objects.
     private void ResolveBars()
     {
-        if (energyBar != null && waterBar != null)
+        if (BarsAreBoundAndDistinct())
             return;
 
         ProgressBar[] bars = FindObjectsByType<ProgressBar>(FindObjectsSortMode.None);
         if (bars == null || bars.Length == 0)
             return;
 
-        if (energyBar == null)
-            energyBar = FindProgressBarByName(energyBarObjectName, bars);
+        energyBar = FindProgressBarByName(energyBarObjectName, bars);
+        waterBar = FindProgressBarByName(waterBarObjectName, bars);
 
-        if (waterBar == null)
-            waterBar = FindProgressBarByName(waterBarObjectName, bars);
-
-        if (waterBar == null)
-            waterBar = FindProgressBarByPartialName("water", bars);
-
-        if (energyBar == null)
-            energyBar = FindProgressBarByPartialName("energy", bars);
-
-        if (waterBar == null)
-            waterBar = bars[0];
-
-        if (energyBar == null)
+        if (energyBar == null && waterBar == null)
         {
-            foreach (ProgressBar bar in bars)
+            ProgressBar template = FindProgressBarByName(DefaultTemplateBarName, bars);
+            if (template == null)
+                template = FindFirstNonNullBar(bars);
+
+            if (template != null)
             {
-                if (bar != null && bar != waterBar)
-                {
-                    energyBar = bar;
-                    break;
-                }
+                energyBar = template;
+                if (!string.IsNullOrWhiteSpace(energyBarObjectName))
+                    energyBar.name = energyBarObjectName;
             }
         }
+
+        if (energyBar != null && waterBar == null)
+            waterBar = CloneCompanionBar(energyBar, waterBarObjectName, WaterBarOffset);
+
+        if (waterBar != null && energyBar == null)
+            energyBar = CloneCompanionBar(waterBar, energyBarObjectName, EnergyBarOffset);
+
+        if (energyBar != null && waterBar != null && energyBar == waterBar)
+            waterBar = CloneCompanionBar(energyBar, waterBarObjectName, WaterBarOffset);
+
+        ApplyEnergyBarStyle(energyBar);
+        ApplyWaterBarStyle(waterBar);
     }
 
     // Finds a progress bar by exact name.
@@ -247,22 +256,62 @@ public class FarmerResourceState : MonoBehaviour
         return null;
     }
 
-    // Finds a progress bar by partial-name token.
-    private static ProgressBar FindProgressBarByPartialName(string token, ProgressBar[] bars)
+    // Returns first non-null progress bar candidate.
+    private static ProgressBar FindFirstNonNullBar(ProgressBar[] bars)
     {
-        if (string.IsNullOrWhiteSpace(token) || bars == null || bars.Length == 0)
+        if (bars == null || bars.Length == 0)
             return null;
 
-        string loweredToken = token.ToLowerInvariant();
         foreach (ProgressBar bar in bars)
         {
-            if (bar == null || string.IsNullOrWhiteSpace(bar.name))
-                continue;
-
-            if (bar.name.ToLowerInvariant().Contains(loweredToken))
+            if (bar != null)
                 return bar;
         }
 
         return null;
+    }
+
+    // Returns true when both bars are valid and bound to different objects.
+    private bool BarsAreBoundAndDistinct()
+    {
+        return energyBar != null && waterBar != null && energyBar != waterBar;
+    }
+
+    // Clones a template progress bar and offsets it for paired HUD layout.
+    private static ProgressBar CloneCompanionBar(ProgressBar template, string objectName, Vector2 positionOffset)
+    {
+        if (template == null)
+            return null;
+
+        Transform parent = template.transform.parent;
+        GameObject clone = Instantiate(template.gameObject, parent);
+        clone.name = string.IsNullOrWhiteSpace(objectName) ? $"{template.name}_Clone" : objectName;
+
+        RectTransform templateRect = template.GetComponent<RectTransform>();
+        RectTransform cloneRect = clone.GetComponent<RectTransform>();
+        if (templateRect != null && cloneRect != null)
+            cloneRect.anchoredPosition = templateRect.anchoredPosition + positionOffset;
+
+        return clone.GetComponent<ProgressBar>();
+    }
+
+    // Applies canonical energy bar style.
+    private static void ApplyEnergyBarStyle(ProgressBar bar)
+    {
+        if (bar == null)
+            return;
+
+        bar.SetText(EnergyLabel);
+        bar.SetFillColor(EnergyBarColor);
+    }
+
+    // Applies canonical water bar style.
+    private static void ApplyWaterBarStyle(ProgressBar bar)
+    {
+        if (bar == null)
+            return;
+
+        bar.SetText(WaterLabel);
+        bar.SetFillColor(WaterBarColor);
     }
 }

@@ -24,8 +24,11 @@ using Unity.Multiplayer.Center.Common.Analytics;
 *   - A Canvas for displaying action feedback messages (optional, will search for an active canvas if not assigned).
 */
 
-public class Farmer : MonoBehaviour
+public class Farmer : MonoBehaviour, IFarmActor
 {
+    [Header("Shared Actor Stats")]
+    [SerializeField] private FarmActorStatsDefinition statsDefinition;
+
     [Header("Tool Visuals")]
     [SerializeField] private GameObject wateringCan;
     [SerializeField] private GameObject gardenHoe;
@@ -36,6 +39,7 @@ public class Farmer : MonoBehaviour
     [SerializeField] private string energyBarObjectName = "EnergyBar";
     [SerializeField] private string waterBarObjectName = "WaterBar";
     [SerializeField] private Color staminaBarColor = new Color(1f, 0.86f, 0.2f, 1f);
+    [SerializeField] private Color waterBarColor = new Color(0.2f, 0.38f, 0.88f, 1f);
 
     [Header("Energy")]
     [SerializeField] private float maxEnergy = 100f;
@@ -67,11 +71,15 @@ public class Farmer : MonoBehaviour
     private AnimatedController animatedController;
     private MovementController movementController;
     private FarmerResourceState resourceState;
+    private EnergyState energyState;
     private float currentEnergy;
     private float currentWater;
     private bool sprintInputHeld;
     private float nextFeedbackTime;
+    private bool warnedMissingEnergyBar;
+    private bool warnedMissingWaterBar;
     private IEconomyService economyService;
+    private readonly FarmerTileInteractionService tileInteractionService = new FarmerTileInteractionService();
 
     // Clamps serialized values to safe runtime ranges when edited in inspector.
     private void OnValidate()
@@ -102,28 +110,26 @@ public class Farmer : MonoBehaviour
         Debug.Assert(animatedController, "Farmer requires an AnimatedController");
         Debug.Assert(movementController, "Farmer requires a MovementController");
 
+        ApplyStatsDefinitionIfAssigned();
         ApplyLegacyWaterMigration();
         economyService = GameManager.Instance;
+        energyState = EnergyState.Instance;
+        if (energyState != null)
+        {
+            energyState.Configure(maxEnergy, energyRegenPerSecond);
+            energyState.InitializeIfNeeded(startingEnergy);
+            energyState.SetActorPresent(true);
+        }
+
         resourceState = FarmerResourceState.Instance;
         if (resourceState != null)
         {
+            resourceState.SetFarmerPresent(true);
             resourceState.Configure(maxEnergy, maxWater, energyRegenPerSecond, energyBarObjectName, waterBarObjectName);
             resourceState.InitializeIfNeeded(startingEnergy, startingWater);
-            resourceState.SetFarmerPresent(true);
         }
 
-        AutoBindProgressBars();
-        EnsureBothProgressBars();
-
-        if (energyLevelUI != null)
-        {
-            energyLevelUI.SetText("Energy");
-            energyLevelUI.SetFillColor(staminaBarColor);
-        }
-        if (waterLevelUI != null)
-            waterLevelUI.SetText("Water Level");
-
-        float initialEnergy = resourceState != null && resourceState.IsInitialized ? resourceState.CurrentEnergy : startingEnergy;
+        float initialEnergy = energyState != null && energyState.IsInitialized ? energyState.Current : startingEnergy;
         float initialWater = resourceState != null && resourceState.IsInitialized ? resourceState.CurrentWater : startingWater;
         SetEnergyLevel(initialEnergy);
         SetWaterLevel(initialWater);
@@ -136,6 +142,12 @@ public class Farmer : MonoBehaviour
         if (resourceState == null)
             resourceState = FarmerResourceState.Instance;
 
+        if (energyState == null)
+            energyState = EnergyState.Instance;
+
+        if (energyState != null)
+            energyState.SetActorPresent(true);
+
         if (resourceState != null)
             resourceState.SetFarmerPresent(true);
     }
@@ -143,6 +155,9 @@ public class Farmer : MonoBehaviour
     // Marks farmer as inactive when component is disabled.
     private void OnDisable()
     {
+        if (energyState != null)
+            energyState.SetActorPresent(false);
+
         if (resourceState != null)
             resourceState.SetFarmerPresent(false);
     }
@@ -150,6 +165,9 @@ public class Farmer : MonoBehaviour
     // Ensures farmer-presence state is reset if object is destroyed.
     private void OnDestroy()
     {
+        if (energyState != null)
+            energyState.SetActorPresent(false);
+
         if (resourceState != null)
             resourceState.SetFarmerPresent(false);
     }
@@ -230,69 +248,7 @@ public class Farmer : MonoBehaviour
             return;
         }
 
-        switch (tile.TileCondition)
-        {
-            case FarmTile.Condition.Grass:
-                if (!tile.SupportsTilling())
-                    return;
-
-                if (!TryConsumeEnergy(tillEnergyCost))
-                {
-                    ShowActionBlockedFeedback(lowEnergyMessage);
-                    return;
-                }
-
-                animatedController.SetTrigger("Till");
-                tile.Interact(); // tilling always allowed
-                break;
-
-            case FarmTile.Condition.Tilled:
-                if (!tile.SupportsWatering())
-                    return;
-
-                if (!TryConsumeWater(waterPerUse))
-                {
-                    ShowActionBlockedFeedback(lowWaterMessage);
-                    return;
-                }
-
-                animatedController.SetTrigger("Water"); // TODO: does this need to be "Watering"?
-                tile.Interact();
-                break;
-
-            case FarmTile.Condition.Watered:
-                if (!tile.SupportsPlanting())
-                    return;
-
-                if (!TryConsumeSeeds(seedsPerPlant))
-                {
-                    ShowActionBlockedFeedback(lowSeedsMessage);
-                    return;
-                }
-
-                Debug.Log("Now planting a seed.");
-                tile.Interact();
-                break;
-            case FarmTile.Condition.Planted:
-                if (!tile.SupportsWatering())
-                    return;
-
-                if (!TryConsumeWater(waterPerUse))
-                {
-                    ShowActionBlockedFeedback(lowWaterMessage);
-                    return;
-                }
-
-                animatedController.SetTrigger("Water");
-                Debug.Log("Watering planted tile.");
-                tile.Interact();
-                break;
-            case FarmTile.Condition.Harvestable:
-                  {
-                  tile.Interact();
-                } 
-                break;
-        }
+        tileInteractionService.TryInteract(this, tile);
     }
 
     // Refills player water resource to full capacity.
@@ -366,27 +322,22 @@ public class Farmer : MonoBehaviour
         return economyService != null && economyService.TrySpendResource(EconomyResource.Seeds, amount);
     }
 
-    // Updates current energy, UI bar fill, and shared resource-state mirror.
+    // Updates current energy and shared resource-state mirrors.
     private void SetEnergyLevel(float value)
     {
         currentEnergy = Mathf.Clamp(value, 0f, maxEnergy);
-        float normalized = maxEnergy <= 0f ? 0f : currentEnergy / maxEnergy;
 
-        if (energyLevelUI != null)
-            energyLevelUI.Fill = normalized;
+        if (energyState != null)
+            energyState.SetValue(currentEnergy);
 
         if (resourceState != null)
             resourceState.SetEnergy(currentEnergy);
     }
 
-    // Updates current water, UI bar fill, and shared resource-state mirror.
+    // Updates current water and shared resource-state mirror.
     private void SetWaterLevel(float value)
     {
         currentWater = Mathf.Clamp(value, 0f, maxWater);
-        float normalized = maxWater <= 0f ? 0f : currentWater / maxWater;
-
-        if (waterLevelUI != null)
-            waterLevelUI.Fill = normalized;
 
         if (resourceState != null)
             resourceState.SetWater(currentWater);
@@ -424,31 +375,25 @@ public class Farmer : MonoBehaviour
             return;
 
         if (energyLevelUI == null)
-            energyLevelUI = FindProgressBarByName(energyBarObjectName, bars);
+            energyLevelUI = FindProgressBarByName(energyBarObjectName, bars) ??
+                            FindProgressBarByPartialName("energy", bars) ??
+                            FindProgressBarByPartialName("stamina", bars);
 
         if (waterLevelUI == null)
-            waterLevelUI = FindProgressBarByName(waterBarObjectName, bars);
+            waterLevelUI = FindProgressBarByName(waterBarObjectName, bars) ??
+                           FindProgressBarByPartialName("water", bars);
 
-        if (waterLevelUI == null)
-            waterLevelUI = FindProgressBarByPartialName("water", bars);
+        if (energyLevelUI == null && waterLevelUI == null)
+            energyLevelUI = FindFirstNonNullBar(bars);
 
-        if (energyLevelUI == null)
-            energyLevelUI = FindProgressBarByPartialName("energy", bars);
+        if (energyLevelUI != null && waterLevelUI == null)
+            waterLevelUI = FindFirstDistinctBar(energyLevelUI, bars);
 
-        if (waterLevelUI == null)
-            waterLevelUI = bars[0];
+        if (waterLevelUI != null && energyLevelUI == null)
+            energyLevelUI = FindFirstDistinctBar(waterLevelUI, bars);
 
-        if (energyLevelUI == null && bars.Length > 1)
-        {
-            foreach (ProgressBar bar in bars)
-            {
-                if (bar != null && bar != waterLevelUI)
-                {
-                    energyLevelUI = bar;
-                    break;
-                }
-            }
-        }
+        if (energyLevelUI == waterLevelUI)
+            waterLevelUI = null;
     }
 
     // Finds progress bars scoped to current scene roots (with global fallback).
@@ -525,17 +470,120 @@ public class Farmer : MonoBehaviour
     // Creates missing companion bar when only one of energy/water bars exists.
     private void EnsureBothProgressBars()
     {
-        if (energyLevelUI != null && waterLevelUI != null)
+        if (energyLevelUI != null && waterLevelUI != null && energyLevelUI != waterLevelUI)
             return;
+
+        ProgressBar[] bars = FindProgressBarsInCurrentScene();
+
+        if (energyLevelUI == null && waterLevelUI == null)
+            energyLevelUI = FindFirstNonNullBar(bars);
 
         if (energyLevelUI == null && waterLevelUI != null)
         {
-            energyLevelUI = CloneCompanionBar(waterLevelUI, energyBarObjectName, new Vector2(0f, 36f));
-            return;
+            energyLevelUI = FindFirstDistinctBar(waterLevelUI, bars);
+            if (energyLevelUI == null)
+                energyLevelUI = CloneCompanionBar(waterLevelUI, energyBarObjectName, new Vector2(0f, 36f));
+
+            if (energyLevelUI != null)
+                ApplyEnergyBarStyle(energyLevelUI);
         }
 
         if (waterLevelUI == null && energyLevelUI != null)
+        {
+            waterLevelUI = FindFirstDistinctBar(energyLevelUI, bars);
+            if (waterLevelUI == null)
+                waterLevelUI = CloneCompanionBar(energyLevelUI, waterBarObjectName, new Vector2(0f, -36f));
+
+            if (waterLevelUI != null)
+                ApplyWaterBarStyle(waterLevelUI);
+        }
+
+        if (energyLevelUI != null && waterLevelUI != null && energyLevelUI == waterLevelUI)
+        {
+            waterLevelUI = FindFirstDistinctBar(energyLevelUI, bars);
+            if (waterLevelUI == null)
+                waterLevelUI = CloneCompanionBar(energyLevelUI, waterBarObjectName, new Vector2(0f, -36f));
+        }
+
+        if (energyLevelUI != null)
+            ApplyEnergyBarStyle(energyLevelUI);
+
+        if (waterLevelUI != null)
+            ApplyWaterBarStyle(waterLevelUI);
+    }
+
+    // Re-resolves bars after scene/UI transitions and ensures references do not collapse to the same bar.
+    private void EnsureProgressBarsBound()
+    {
+        bool energyValid = energyLevelUI != null;
+        bool waterValid = waterLevelUI != null;
+
+        if (energyValid && waterValid && energyLevelUI != waterLevelUI)
+            return;
+
+        AutoBindProgressBars();
+        EnsureBothProgressBars();
+
+        if (energyLevelUI != null)
+            ApplyEnergyBarStyle(energyLevelUI);
+
+        if (waterLevelUI != null)
+            ApplyWaterBarStyle(waterLevelUI);
+
+        if (energyLevelUI == null && !warnedMissingEnergyBar)
+        {
+            Debug.LogWarning("Farmer could not bind EnergyBar by name. Check HUD object naming/persistence.");
+            warnedMissingEnergyBar = true;
+        }
+
+        if (waterLevelUI == null && !warnedMissingWaterBar)
+        {
+            Debug.LogWarning("Farmer could not bind WaterBar by name. Check HUD object naming/persistence.");
+            warnedMissingWaterBar = true;
+        }
+    }
+
+    private void ResolveNamedWaterBar()
+    {
+        if (waterLevelUI != null)
+            return;
+
+        ProgressBar[] bars = FindProgressBarsInCurrentScene();
+        waterLevelUI = FindProgressBarByName(waterBarObjectName, bars) ??
+                       FindProgressBarByPartialName("water", bars);
+
+        if (waterLevelUI == null && energyLevelUI != null)
+            waterLevelUI = FindFirstDistinctBar(energyLevelUI, bars);
+
+        if (waterLevelUI == null && energyLevelUI != null)
             waterLevelUI = CloneCompanionBar(energyLevelUI, waterBarObjectName, new Vector2(0f, -36f));
+
+        if (waterLevelUI != null)
+            ApplyWaterBarStyle(waterLevelUI);
+    }
+
+    private void ApplyEnergyBarStyle(ProgressBar bar)
+    {
+        if (bar == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(energyBarObjectName))
+            bar.name = energyBarObjectName;
+
+        bar.SetText("Energy");
+        bar.SetFillColor(staminaBarColor);
+    }
+
+    private void ApplyWaterBarStyle(ProgressBar bar)
+    {
+        if (bar == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(waterBarObjectName))
+            bar.name = waterBarObjectName;
+
+        bar.SetText("Water Level");
+        bar.SetFillColor(waterBarColor);
     }
 
     // Clones a template progress bar and offsets it for paired HUD layout.
@@ -556,6 +604,36 @@ public class Farmer : MonoBehaviour
         return clone.GetComponent<ProgressBar>();
     }
 
+    // Returns first non-null progress bar candidate.
+    private static ProgressBar FindFirstNonNullBar(ProgressBar[] bars)
+    {
+        if (bars == null || bars.Length == 0)
+            return null;
+
+        foreach (ProgressBar bar in bars)
+        {
+            if (bar != null)
+                return bar;
+        }
+
+        return null;
+    }
+
+    // Returns first non-null bar that is not the provided reference.
+    private static ProgressBar FindFirstDistinctBar(ProgressBar referenceBar, ProgressBar[] bars)
+    {
+        if (bars == null || bars.Length == 0)
+            return null;
+
+        foreach (ProgressBar bar in bars)
+        {
+            if (bar != null && bar != referenceBar)
+                return bar;
+        }
+
+        return null;
+    }
+
     // Migrates old normalized-water serialized values to absolute-water units.
     private void ApplyLegacyWaterMigration()
     {
@@ -570,5 +648,60 @@ public class Farmer : MonoBehaviour
             waterPerUse *= maxWater;
 
         startingWater = Mathf.Clamp(startingWater, 0f, maxWater);
+    }
+
+    // Applies shared actor stats from ScriptableObject if assigned.
+    private void ApplyStatsDefinitionIfAssigned()
+    {
+        if (statsDefinition == null)
+            return;
+
+        maxEnergy = statsDefinition.MaxEnergy;
+        startingEnergy = statsDefinition.StartingEnergy;
+        energyRegenPerSecond = statsDefinition.EnergyRegenPerSecond;
+        tillEnergyCost = statsDefinition.TillEnergyCost;
+        jumpEnergyCost = statsDefinition.JumpEnergyCost;
+        sprintEnergyDrainPerSecond = statsDefinition.SprintEnergyDrainPerSecond;
+
+        maxWater = statsDefinition.MaxWater;
+        startingWater = statsDefinition.StartingWater;
+        waterPerUse = statsDefinition.WaterPerUse;
+
+        seedsPerPlant = statsDefinition.SeedsPerPlant;
+    }
+
+    public float TillEnergyCost => tillEnergyCost;
+    public float WaterPerUse => waterPerUse;
+    public int SeedsPerPlant => seedsPerPlant;
+    public string LowEnergyMessage => lowEnergyMessage;
+    public string LowWaterMessage => lowWaterMessage;
+    public string LowSeedsMessage => lowSeedsMessage;
+
+    public bool TryConsumeEnergyForAction(float amount)
+    {
+        return TryConsumeEnergy(amount);
+    }
+
+    public bool TryConsumeWaterForAction(float amount)
+    {
+        return TryConsumeWater(amount);
+    }
+
+    public bool TryConsumeSeedsForAction(int amount)
+    {
+        return TryConsumeSeeds(amount);
+    }
+
+    public void TriggerAnimation(string triggerName)
+    {
+        if (animatedController == null || string.IsNullOrWhiteSpace(triggerName))
+            return;
+
+        animatedController.SetTrigger(triggerName);
+    }
+
+    public void ShowActionBlockedMessage(string message)
+    {
+        ShowActionBlockedFeedback(message);
     }
 }
