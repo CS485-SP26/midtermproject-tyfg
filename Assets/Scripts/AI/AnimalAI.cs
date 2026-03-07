@@ -12,11 +12,11 @@ public enum AnimalState
 }
 public class AnimalAI : MonoBehaviour
 {
-    private NavMeshAgent agent;
+    private NavMeshAgent agent;//runs the ai
 
-    public AnimalState currentState;
+    public AnimalState currentState;//current state of the animal
 
-    public float wanderRadius = 10f;
+    public float wanderRadius = 10f;//radius for wandering around
     public float stateTimer;
 
     void Start()
@@ -24,7 +24,7 @@ public class AnimalAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         ChangeState(AnimalState.Wander);
     }
-
+// Update is called once per frame
     void Update()
     {
         stateTimer -= Time.deltaTime;
@@ -42,7 +42,7 @@ public class AnimalAI : MonoBehaviour
                 break;
         }
     }
-
+// Function to change the current state of the animal
     void ChangeState(AnimalState newState)
     {
         currentState = newState;
@@ -59,7 +59,7 @@ public class AnimalAI : MonoBehaviour
                 break;
         }
     }
-
+// Helper function to get a random point on the NavMesh within a certain radius
     Vector3 RandomNavSphere(Vector3 origin, float dist)
     {
         Vector3 randDirection = Random.insideUnitSphere * dist;
