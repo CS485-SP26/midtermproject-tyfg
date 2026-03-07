@@ -4047,6 +4047,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Character.AnimatedController
   tileSelector: {fileID: 1114254702}
+  farmAccessGate: {fileID: 0}
 --- !u!114 &431992763
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4059,13 +4060,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6677eb97122662043aae037e764bc353, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Farmer
+  statsDefinition: {fileID: 0}
+  toolVisuals:
+    wateringCan: {fileID: 1489264305}
+    gardenHoe: {fileID: 1359721264}
   wateringCan: {fileID: 1489264305}
   gardenHoe: {fileID: 1359721264}
-  energyLevelUI: {fileID: 0}
-  waterLevelUI: {fileID: 804849415}
+  legacyToolVisualsMigrated: 1
   energyBarObjectName: EnergyBar
   waterBarObjectName: WaterBar
-  staminaBarColor: {r: 1, g: 0.86, b: 0.2, a: 1}
   maxEnergy: 100
   startingEnergy: 100
   energyRegenPerSecond: 10
@@ -4076,6 +4079,14 @@ MonoBehaviour:
   startingWater: 100
   waterPerUse: 0.1
   migrateLegacyWaterValues: 1
+  actionFeedbackSettings:
+    notificationCanvas: {fileID: 0}
+    feedbackAnchor: {x: 0.5, y: 0.28}
+    feedbackSize: {x: 420, y: 48}
+    feedbackFontSize: 20
+    feedbackDurationSeconds: 0.8
+    feedbackRisePixels: 28
+    feedbackCooldownSeconds: 0.6
   notificationCanvas: {fileID: 0}
   feedbackAnchor: {x: 0.5, y: 0.28}
   feedbackSize: {x: 420, y: 48}
@@ -4083,6 +4094,7 @@ MonoBehaviour:
   feedbackDurationSeconds: 0.8
   feedbackRisePixels: 28
   feedbackCooldownSeconds: 0.6
+  legacyFeedbackMigrated: 1
   lowEnergyMessage: Not enough energy.
   lowWaterMessage: Out of water. Refill at the shed.
   lowSeedsMessage: Out of seeds. Buy more seeds.
@@ -7212,17 +7224,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 778930465}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &804849415 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7270873732835106085, guid: aa106e0fc55758f4f8783593e87e6dae, type: 3}
-  m_PrefabInstance: {fileID: 7462262175994456880}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ace990f4258f5f3408168c95107c2280, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProgressBar
 --- !u!1 &818270247
 GameObject:
   m_ObjectHideFlags: 0
@@ -8499,6 +8500,67 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 953411548}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1011033483
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5883155896844355917, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5883155896844355918, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_Name
+      value: Tiger_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.597821
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000010786866
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.95185226
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6552451252865160180, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
 --- !u!20 &1040208315 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 373491078271530027, guid: 6b079cfe482d2fe41b4315e111d183d8, type: 3}
@@ -17425,3 +17487,4 @@ SceneRoots:
   - {fileID: 876916362}
   - {fileID: 1832991199}
   - {fileID: 654905152}
+  - {fileID: 1011033483}
