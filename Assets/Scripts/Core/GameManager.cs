@@ -229,6 +229,7 @@ namespace Core
             resourceBalances[EconomyResource.Funds] = Mathf.Max(0, startingFunds);
             resourceBalances[EconomyResource.Seeds] = Mathf.Max(0, startingSeeds);
             resourceBalances[EconomyResource.SkillPoints] = Mathf.Max(0, startingSkillPoints);
+            resourceBalances[EconomyResource.Plants] = Mathf.Max(0, startingPlants);
         }
 
         // Centralized setter that clamps value and optionally emits change events.
@@ -269,6 +270,9 @@ namespace Core
 
                 case EconomyResource.SkillPoints:
                     SkillPointsChanged?.Invoke(value);
+                    break;
+                case EconomyResource.Plants:
+                    PlantsChanged?.Invoke(value);
                     break;
             }
         }

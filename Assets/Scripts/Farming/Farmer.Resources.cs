@@ -3,6 +3,7 @@ using UnityEngine;
 
 public partial class Farmer
 {
+
     private void DrainSprintEnergyIfNeeded()
     {
         bool hasMovementInput = movementController != null && movementController.HasMovementInput;

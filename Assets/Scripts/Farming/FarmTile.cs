@@ -280,9 +280,9 @@ namespace Farming
             // Send to inventory system (future)
         // Inventory.Instance.AddItem(harvestedData);
         //temp fix
-        Debug.Log("Harvested: " + harvestedData.plantName + " worth " + harvestedData.sellValue + " funds.");
-        GameManager.Instance.AddFunds(harvestedData.sellValue);
+            Debug.Log("Harvested: " + harvestedData.plantName + " added to inventory");
             // Remove plant from tile
+            GameManager.Instance.AddResource(EconomyResource.Plants,1);
             Destroy(currentPlant.gameObject);
             currentPlant = null;
             tileCondition = Condition.Grass;
