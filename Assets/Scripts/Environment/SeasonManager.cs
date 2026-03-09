@@ -19,9 +19,35 @@ namespace Environment
 
         void Awake()
         {
-            Instance = this;
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject); // ← keeps it across scenes
+            }
+            else
+            {
+                Destroy(gameObject); // prevents duplicates
+            }
+                }
+        private void OnDayPassed(int newDay)
+        {
+                    currentDay++;
+
+            if (currentDay >= daysPerSeason)
+            {
+                currentDay = 1;
+                AdvanceSeason();
+            }
+        }
+      private void OnEnable()
+        {
+            DayController.DayAdvanced += OnDayPassed;
         }
 
+        private void OnDisable()
+        {
+            DayController.DayAdvanced -= OnDayPassed;
+        }
         public void AdvanceDay()
         {
             currentDay++;
