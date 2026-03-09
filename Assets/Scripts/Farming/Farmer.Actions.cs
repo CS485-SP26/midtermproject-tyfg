@@ -1,9 +1,6 @@
 using Farming;
 using UnityEngine;
-using Farming.Tiles;
-using Farming.Crops;
-using Farming.SceneState;
-using Environment.Tiles;
+
 public partial class Farmer
 {
     public void SetTool(string tool)
