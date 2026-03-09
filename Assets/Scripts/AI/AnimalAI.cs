@@ -1,8 +1,11 @@
 using UnityEngine;
 using UnityEngine.AI;
+
 /*
-    * Simple animal AI that can idle and wander around. You can expand this by adding more states like eating, sleeping, etc.
-*/
+ * Simple animal AI that can idle and wander around.
+ * Now includes animation control using Vert and State parameters.
+ */
+
 public enum AnimalState
 {
     Idle,
@@ -10,24 +13,41 @@ public enum AnimalState
     Eat,
     Sleep
 }
+
 public class AnimalAI : MonoBehaviour
 {
-    private NavMeshAgent agent;//runs the ai
+    private NavMeshAgent agent;
+    private Animator animator;
 
-    public AnimalState currentState;//current state of the animal
+    public AnimalState currentState;
 
-    public float wanderRadius = 10f;//radius for wandering around
+    public float wanderRadius = 10f;
     public float stateTimer;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+
         ChangeState(AnimalState.Wander);
     }
-// Update is called once per frame
+
     void Update()
     {
         stateTimer -= Time.deltaTime;
+
+        float speed = agent.velocity.magnitude;
+
+        // Switch between idle and movement blend trees
+        float vertValue = speed > 0.1f ? 1f : 0f;
+        animator.SetFloat("Vert", vertValue);
+
+        // Drive walk/run blend inside movement tree
+        float normalizedSpeed = Mathf.Clamp01(speed / agent.speed);
+        animator.SetFloat("State", normalizedSpeed);
+
+        Debug.Log("Velocity: " + agent.velocity);
+        Debug.Log("Vert: " + vertValue + " | State: " + normalizedSpeed);
 
         switch (currentState)
         {
@@ -42,7 +62,7 @@ public class AnimalAI : MonoBehaviour
                 break;
         }
     }
-// Function to change the current state of the animal
+
     void ChangeState(AnimalState newState)
     {
         currentState = newState;
@@ -59,14 +79,13 @@ public class AnimalAI : MonoBehaviour
                 break;
         }
     }
-// Helper function to get a random point on the NavMesh within a certain radius
+
     Vector3 RandomNavSphere(Vector3 origin, float dist)
     {
         Vector3 randDirection = Random.insideUnitSphere * dist;
         randDirection += origin;
 
         NavMeshHit navHit;
-
         NavMesh.SamplePosition(randDirection, out navHit, dist, -1);
 
         return navHit.position;
