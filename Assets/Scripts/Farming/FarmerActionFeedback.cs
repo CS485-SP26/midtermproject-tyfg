@@ -22,6 +22,8 @@ namespace Farming
         public float FeedbackRisePixels => feedbackRisePixels;
         public float FeedbackCooldownSeconds => feedbackCooldownSeconds;
 
+
+        // Migrate legacy settings from the old system. This allows us to reuse existing settings without breaking them.
         public void MigrateLegacy(
             Canvas legacyCanvas,
             Vector2 legacyAnchor,
@@ -43,6 +45,7 @@ namespace Farming
             Clamp();
         }
 
+        // Ensure all settings are within reasonable bounds to prevent issues with the feedback display.
         public void Clamp()
         {
             feedbackFontSize = Mathf.Max(10, feedbackFontSize);
@@ -53,8 +56,13 @@ namespace Farming
     }
 
     // Displays temporary blocked-action messages with a cooldown.
+    // A public sealed class is used here to allow other systems to create and manage their own feedback instances if needed, 
+    // while keeping the implementation details hidden. This promotes encapsulation and flexibility in how feedback is used 
+    // across the farming system. 
     public sealed class FarmerActionFeedback
     {
+        // readonly means the settings reference cannot be changed after construction, ensuring consistent behavior. 
+        // The cooldown mechanism prevents spamming feedback messages, improving user experience.
         private readonly FarmerActionFeedbackSettings settings;
         private float nextFeedbackTime;
 
@@ -63,6 +71,7 @@ namespace Farming
             settings = settingsRef;
         }
 
+        // Attempts to show a feedback message if the cooldown has elapsed. If successful, it schedules the next allowed feedback time.
         public void TryShow(string message)
         {
             if (settings == null || string.IsNullOrWhiteSpace(message) || Time.time < nextFeedbackTime)
