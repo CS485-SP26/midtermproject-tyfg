@@ -4,7 +4,8 @@ using UnityEngine.AI;
 /*
  * Simple animal AI that can idle and wander around.
  * Now includes animation control using Vert and State parameters.
- */
+ * - Anthony NOTE: I did not code this and i have no idea how it works, so if you want to change it, good luck. 
+*/
 
 public enum AnimalState
 {
