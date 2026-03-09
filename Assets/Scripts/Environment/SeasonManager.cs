@@ -19,7 +19,15 @@ namespace Environment
 
         void Awake()
         {
-            Instance = this;
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject); // ← keeps it across scenes
+            }
+            else
+            {
+                Destroy(gameObject); // prevents duplicates
+            }
         }
 
         public void AdvanceDay()

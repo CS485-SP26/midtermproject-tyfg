@@ -8508,6 +8508,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5883155896844355907, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: 8739604ff156c91408e3f6352de03dbc, type: 3}
     - target: {fileID: 5883155896844355917, guid: 8741cd6c8b9fc3947999191d0c381f50, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -9112,6 +9116,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1248295911}
   - component: {fileID: 1248295910}
+  - component: {fileID: 1248295912}
   m_Layer: 0
   m_Name: DayController
   m_TagString: Untagged
@@ -9139,7 +9144,19 @@ MonoBehaviour:
   currentDay: 1
   dayPassedEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: e7297a88e0a9ad84c8e99d10c1dc7cd0, type: 3}
+        m_TargetAssemblyTypeName: UnityEditor.MonoScript, UnityEditor.CoreModule
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Should do season stuff
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &1248295911
 Transform:
   m_ObjectHideFlags: 0
@@ -9156,6 +9173,27 @@ Transform:
   - {fileID: 410087041}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1248295912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1248295909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 064c25853c9bcd64a970d14e96deb016, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Environment.SeasonSunController
+  sunLight: {fileID: 410087040}
+  springColor: {r: 1, g: 0.95, b: 0.8, a: 1}
+  summerColor: {r: 1, g: 1, b: 1, a: 1}
+  fallColor: {r: 1, g: 0.75, b: 0.5, a: 1}
+  winterColor: {r: 0.75, g: 0.85, b: 1, a: 1}
+  springIntensity: 1.1
+  summerIntensity: 1.3
+  fallIntensity: 0.9
+  winterIntensity: 0.6
 --- !u!1 &1259173392
 GameObject:
   m_ObjectHideFlags: 0
