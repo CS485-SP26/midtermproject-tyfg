@@ -66,8 +66,8 @@ namespace ithappy.Animals_FREE
 
         private void Update()
         {
-            m_Movement.Move(Time.deltaTime, in m_Axis, in m_Target, m_IsRun, m_IsMoving, out var animAxis, out var isAir);
-            m_Animation.Animate(in animAxis, m_IsRun ? 1f : 0f, Time.deltaTime);
+            // m_Movement.Move(Time.deltaTime, in m_Axis, in m_Target, m_IsRun, m_IsMoving, out var animAxis, out var isAir);
+            // m_Animation.Animate(in animAxis, m_IsRun ? 1f : 0f, Time.deltaTime);
         }
 
         private void OnAnimatorIK()
