@@ -30,7 +30,7 @@ namespace ithappy.Animals_FREE
         private LookWeight m_LookWeight = new(1f, 0.3f, 0.7f, 1f);
 
         private Transform m_Transform;
-        private CharacterController m_Controller;
+        // private CharacterController m_Controller;
         private Animator m_Animator;
 
         private MovementHandler m_Movement;
@@ -57,10 +57,10 @@ namespace ithappy.Animals_FREE
         private void Awake()
         {
             m_Transform = transform;
-            m_Controller = GetComponent<CharacterController>();
+            //m_Controller = GetComponent<CharacterController>();
             m_Animator = GetComponent<Animator>();
 
-            m_Movement = new MovementHandler(m_Controller, m_Transform, m_WalkSpeed, m_RunSpeed, m_RotateSpeed, m_JumpHeight, m_Space);
+            //m_Movement = new MovementHandler(m_Controller, m_Transform, m_WalkSpeed, m_RunSpeed, m_RotateSpeed, m_JumpHeight, m_Space);
             m_Animation = new AnimationHandler(m_Animator, m_VerticalID, m_StateID);
         }
 
@@ -93,13 +93,14 @@ namespace ithappy.Animals_FREE
             }
         }
 
+        /*
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
             if(hit.normal.y > m_Controller.stepOffset)
             {
                 m_Movement.SetSurface(hit.normal);
             }
-        }
+        }*/
 
         [Serializable]
         private struct LookWeight
