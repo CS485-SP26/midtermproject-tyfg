@@ -7,6 +7,7 @@ public class FireworksZone : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("FireworksZone active");
         if (fireworksButton != null)
             fireworksButton.SetActive(false);
     }
@@ -22,8 +23,10 @@ public class FireworksZone : MonoBehaviour
         if (other.CompareTag("Player") && fireworksButton != null)
             fireworksButton.SetActive(false);
     }
-
-    public void LaunchFireworks()
+    public void TestClick()
+{
+    Debug.Log("CLICK WORKED");
+}    public void LaunchFireworks()
     {
          Debug.Log("Fireworks button pressed");
 
